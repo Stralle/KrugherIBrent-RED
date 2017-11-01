@@ -1,9 +1,15 @@
 package main;
 
-import java.awt.image.WritableRaster;
-import rafgfxlib.ImageViewer;
-import rafgfxlib.Util;
-import rafgfxlib_e.ImageViewer_E;
+import java.awt.Color;
+import java.awt.Toolkit;
+//import java.awt.image.WritableRaster;
+
+import game_states.MainGameState;
+import game_states.MainMenuState;
+import rafgfxlib.GameHost;
+//import rafgfxlib.ImageViewer;
+//import rafgfxlib.Util;
+//import rafgfxlib_e.ImageViewer_E;
 
 public class Main {
 
@@ -22,7 +28,7 @@ public class Main {
 		int screenHeight = gd.getDisplayMode().getHeight();
 		*/
 		
-		int screenWidth = 300;
+		/*int screenWidth = 300;
 		int screenHeight = 300;
 		WritableRaster rasterLeft = Util.createRaster(screenWidth, screenHeight, false);
 		WritableRaster rasterRight = Util.createRaster(screenWidth, screenHeight, false);
@@ -50,7 +56,26 @@ public class Main {
 		
 		
 		ImageViewer.showImageWindow(Util.rasterToImage(ImageViewer_E.rasterCombine(rasterLeft, rasterRight, false)), "Krugher");
+	
+	*/
+	
+		
+		GameHost host = new GameHost("Krugher and Brent RED", (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth()*3/4,
+																(int) Toolkit.getDefaultToolkit().getScreenSize().getHeight()*3/4, false);
+		
+		host.setUpdateRate(59);
+		host.setBackgroundClearColor(Color.BLACK);
+
+		new MainMenuState(host);
+		new MainGameState(host);
+		
+		host.setState("mainmenustate");
+		
+		
+		
+		
 	}
+	
 
 
 }

@@ -23,7 +23,7 @@ public class Map extends GameState{
 	
 	private static final int SPEC_FLD_NUM = 30;
 	
-	private static final String stateName = "GAME STATE";
+	private static final String stateName = "maingamestate";
 	
 	private Field classicField = null;
 	private Field specialField = null;
@@ -196,7 +196,9 @@ public class Map extends GameState{
 	@Override
 	public void handleKeyUp(int keyCode) {
 		// TODO Auto-generated method stub
-		
+		if(keyCode == KeyEvent.VK_ESCAPE) {
+			host.setState("mainmenustate");
+		}
 	}
 	
 }

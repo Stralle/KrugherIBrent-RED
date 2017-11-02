@@ -10,6 +10,7 @@ import rafgfxlib.GameHost;
 //import rafgfxlib.ImageViewer;
 //import rafgfxlib.Util;
 //import rafgfxlib_e.ImageViewer_E;
+import rafgfxlib.Util;
 
 public class Main {
 
@@ -65,13 +66,15 @@ public class Main {
 		
 		host.setUpdateRate(59);
 		host.setBackgroundClearColor(Color.BLACK);
+		
+		host.setIcon(Util.loadImage("/photos/icon.png"));
 
 		new MainMenuState(host);
 		new Map(host);
 		
-		host.setState("GAME STATE");
+		host.setState("mainmenustate");
 		
-		
+		// GAME STATE je promenjen u maingamestate
 		
 		
 	}

@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import rafgfxlib.GameHost;
@@ -12,6 +13,13 @@ import rafgfxlib.GameHost.GFMouseButton;
 import rafgfxlib.GameState;
 import rafgfxlib.Util;
 
+
+/**
+ * Main menu for a video game Krugher and Brent RED.
+ * This class extends GameState and it will provide all necessary things in main menu.
+ * @author Strahinja Rodic (Stralle)
+ *
+ */
 public class MainMenuState extends GameState {
 		
 		private static final int BEER_MAX = 6;
@@ -30,6 +38,14 @@ public class MainMenuState extends GameState {
 			Exit
 		}
 		
+		private enum MenuType {
+			Default,
+			About,
+			Controls,
+		}
+		
+		public BufferedImage globalImage = Util.loadImage("/photos/doge.png");
+				
 		private Beer[] beers = new Beer[BEER_MAX];
 		
 		private Image beerImage;
@@ -39,6 +55,7 @@ public class MainMenuState extends GameState {
 		private Color defaultColor = Color.CYAN;
 		
 		private MenuButton currentMenuButton = null;
+		private MenuType currentMenuType = MenuType.Default;
 		
 		public MainMenuState(GameHost host) {
 			super(host);
@@ -52,9 +69,9 @@ public class MainMenuState extends GameState {
 			for(int i = 0; i < BEER_MAX; ++i)
 			{
 				beers[i] = new Beer();
-				beers[i].posX = random.nextInt(host.getWidth());
+				beers[i].posX = random.nextInt(host.getWidth() - 100);
 				beers[i].posY = 0;
-				beers[i].speed = random.nextInt(20 + 1) + 10;
+				beers[i].speed = random.nextInt(10 + 1) + 10;
 			}
 		}
 
@@ -76,16 +93,10 @@ public class MainMenuState extends GameState {
 			int offsetX = startX + 25;
 			int offsetY = startY + 50;
 			
-//			int picCoordX = offsetX - 30;
-//			int picCoordY = offsetY - 35;
-
 			Font font = new Font("Serif", Font.BOLD, 24);
 			g.setFont(font);
 			g.setColor(defaultColor);
 			
-//			g.drawImage(Util.loadImage("/photos/red-small.png"), picCoordX, picCoordY, null);
-			
-//			g.drawRect(offsetX - 5, offsetY - 24, 200, 40);
 			if(!stringColor.equals(defaultColor) && menuButton == MenuButton.Start) {
 				g.setColor(stringColor);
 				g.drawString("START GAME", offsetX, offsetY);
@@ -96,7 +107,6 @@ public class MainMenuState extends GameState {
 			
 			offsetY += 50;
 			
-//			g.drawRect(offsetX - 5, offsetY - 24, 200, 40);
 			if(!stringColor.equals(defaultColor) && menuButton == MenuButton.Upload) {
 				g.setColor(stringColor);
 				g.drawString("CHOOSE PHOTO", offsetX, offsetY);
@@ -107,7 +117,6 @@ public class MainMenuState extends GameState {
 			
 			offsetY += 50;
 			
-//			g.drawRect(offsetX - 5, offsetY - 24, 200, 40);
 			if(!stringColor.equals(defaultColor) && menuButton == MenuButton.Controls) {
 				g.setColor(stringColor);
 				g.drawString("CONTROLS", offsetX, offsetY);
@@ -118,7 +127,6 @@ public class MainMenuState extends GameState {
 			
 			offsetY += 50;
 			
-//			g.drawRect(offsetX - 5, offsetY - 24, 200, 40);
 			if(!stringColor.equals(defaultColor) && menuButton == MenuButton.About) {
 				g.setColor(stringColor);
 				g.drawString("ABOUT GAME", offsetX, offsetY);
@@ -129,7 +137,6 @@ public class MainMenuState extends GameState {
 			
 			offsetY += 50;
 			
-//			g.drawRect(offsetX - 5, offsetY - 24, 200, 40);
 			if(!stringColor.equals(defaultColor) && menuButton == MenuButton.Exit) {
 				g.setColor(stringColor);
 				g.drawString("EXIT GAME", offsetX, offsetY);
@@ -139,6 +146,79 @@ public class MainMenuState extends GameState {
 			}
 
 		}
+
+		public void renderAbout(Graphics2D g, int sw, int sh) {
+			int startX = host.getWidth() / 2 - 200;
+			int startY = host.getHeight() / 2 - 250;
+			int offsetX = startX + 25;
+			int offsetY = startY + 50;
+			
+			Font font = new Font("Serif", Font.BOLD, 24);
+			g.setFont(font);
+			g.setColor(defaultColor);
+			
+			g.drawString("WELCOME TO KRUGHER & BRENT RED!", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("CHOOSE AN IMAGE BY CLICKING ON", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("UPLOAD IMAGE MENU ITEM.", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("MOVE THE DWARF TO THE BEER", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("HE WILL DRINK IT", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("IF YOU HIT SPACE THAT WILL", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("APPLY THE FILTER TO IMAGE.", offsetX, offsetY);
+			offsetY += 60;
+			g.drawString("Long time ago, in a brewery far far ago...", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("Krugher & Brent RED was invented", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("And a dwarf has drinked it all.", offsetX, offsetY);
+			offsetY += 100;
+			
+			g.setColor(Color.GREEN);
+			g.drawString("Developed by: nvkvkc, SeriousFresh and Stralle", offsetX, offsetY);
+			offsetY += 50;
+			
+			offsetX += 85;
+			g.setColor(Color.RED);
+			g.drawString("Press ESC to go back", offsetX, offsetY);
+			
+		}
+		
+		public void renderControls(Graphics2D g, int sw, int sh) {
+			int startX = host.getWidth() / 2 - 200;
+			int startY = host.getHeight() / 2 - 150;
+			int offsetX = startX + 25;
+			int offsetY = startY + 50;
+			
+			Font font = new Font("Serif", Font.BOLD, 24);
+			g.setFont(font);
+			g.setColor(Color.GREEN);
+			
+			offsetX += 85;
+			g.drawString("		  CONTROLS", offsetX, offsetY);
+			offsetY += 50;
+			offsetX -= 85;
+			g.setColor(defaultColor);
+			g.drawString("LEFT ARROW == MOVE LEFT", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("RIGHT ARROW == MOVE RIGHT", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("UP ARROW== MOVE UP", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("DOWN ARROW == MOVE DOWN", offsetX, offsetY);
+			offsetY += 30;
+			g.drawString("SPACE == APPLY FILTER", offsetX, offsetY);
+			offsetY += 50;
+
+			offsetX += 70;
+			g.setColor(Color.RED);
+			g.drawString("Press ESC to go back", offsetX, offsetY);
+			
+		}
 		
 		@Override
 		public void render(Graphics2D g, int sw, int sh) {	
@@ -147,8 +227,15 @@ public class MainMenuState extends GameState {
 				g.drawImage(beerImage, beer.posX, beer.posY, null);
 			}
 			
-			renderGameMenu(g, sw, sh, currentMenuButton);
-
+			if(currentMenuType == MenuType.Default)
+				renderGameMenu(g, sw, sh, currentMenuButton);
+			if(currentMenuType == MenuType.About)
+				renderAbout(g, sw, sh);
+			if(currentMenuType == MenuType.Controls)
+				renderControls(g, sw, sh);
+			
+//			g.drawImage(globalImage, null, 50, 50);
+			
 		}
 
 		@Override
@@ -179,24 +266,27 @@ public class MainMenuState extends GameState {
 			
 			if(button == GFMouseButton.Left)
 			{
-				if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //START
-					host.setState("maingamestate");
-				}
-				offsetY += 50;
-				if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //UPLOAD
-					//TODO: upload picture
-				}
-				offsetY += 50;
-				if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //CONTROLS
-					//TODO: controls for the game
-				}
-				offsetY += 50;
-				if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //ABOUT
-					//TODO: About the game
-				}
-				offsetY += 50;
-				if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //EXIT
-					System.exit(0);
+				if(currentMenuType == MenuType.Default) {
+					if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //START
+						host.setState("maingamestate");
+					}
+					offsetY += 50;
+					if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //UPLOAD
+						//TODO: upload picture
+						globalImage = Util.browseForImage("", host.getWindow());
+					}
+					offsetY += 50;
+					if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //CONTROLS
+						currentMenuType = MenuType.Controls;
+					}
+					offsetY += 50;
+					if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //ABOUT
+						currentMenuType = MenuType.About;
+					}
+					offsetY += 50;
+					if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //EXIT
+						System.exit(0);
+					}
 				}
 			}
 		}
@@ -252,6 +342,9 @@ public class MainMenuState extends GameState {
 		public void handleKeyUp(int keyCode) {
 			if(keyCode == KeyEvent.VK_F4) {
 				System.exit(0);
+			}
+			if(keyCode == KeyEvent.VK_ESCAPE && currentMenuType != MenuType.Default) {
+				currentMenuType = MenuType.Default;
 			}
 			//TODO: HOW TO EDIT HIS CLASS?
 //			if(keyCode == KeyEvent.VK_F5) {

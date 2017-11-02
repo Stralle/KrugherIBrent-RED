@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Toolkit;
 //import java.awt.image.WritableRaster;
 
-import game_states.MainGameState;
+import game_stage.Map;
 import game_states.MainMenuState;
 import rafgfxlib.GameHost;
 //import rafgfxlib.ImageViewer;
@@ -67,9 +67,9 @@ public class Main {
 		host.setBackgroundClearColor(Color.BLACK);
 
 		new MainMenuState(host);
-		new MainGameState(host);
+		new Map(host);
 		
-		host.setState("mainmenustate");
+		host.setState("GAME STATE");
 		
 		
 		

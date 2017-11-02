@@ -12,14 +12,14 @@ import rafgfxlib.Util;
 
 public class Map extends GameState{
 	
-	private static final int MAP_WIDTH = 25;
-	private static final int MAP_HEIGHT =  25;
+	public static final int MAP_WIDTH = 25;
+	public static final int MAP_HEIGHT =  25;
 	
-	private static final int PLYR_WIDTH = 128;
-	private static final int PLYR_HEIGHT = 128;
+	public static final int PLYR_WIDTH = 128;
+	public static final int PLYR_HEIGHT = 128;
 	
-	private static final int IMG_WIDTH = 64;
-	private static final int IMG_HEIGHT = 64;
+	public static final int IMG_WIDTH = 64;
+	public static final int IMG_HEIGHT = 64;
 	
 	private static final int SPEC_FLD_NUM = 30;
 	
@@ -33,16 +33,28 @@ public class Map extends GameState{
 	private int shiftY = 0;
 	int x0, x1, y0, y1;
 	int mdlX, mdlY;
+	int plyrVelX = 0;
+	int plyrVelY = 0;
 	
 	private GameHost host = null;
 	
 	private boolean map[][] = new boolean[MAP_HEIGHT][MAP_WIDTH];
+	
+	private static int SHIFTX_MIN;
+	private static int SHIFTX_MAX;
+	private static int SHIFTY_MIN;
+	private static int SHIFTY_MAX;
+	
 	
 	
 	public Map(GameHost host) {
 		super(host);
 		System.out.println(host.getWidth()+" "+host.getHeight());
 		this.host = host;
+		SHIFTX_MIN = -host.getWidth()/2+PLYR_WIDTH/2;
+		SHIFTX_MAX = IMG_WIDTH*MAP_WIDTH+SHIFTX_MIN-PLYR_WIDTH;
+		SHIFTY_MIN = -host.getHeight()/2+PLYR_HEIGHT/2;
+		SHIFTY_MAX = IMG_WIDTH*MAP_HEIGHT+SHIFTY_MIN-PLYR_HEIGHT;
 		initTerain();
 		initPlayer();
 	}
@@ -146,7 +158,7 @@ public class Map extends GameState{
 
 	@Override
 	public void update() {
-		// TODO Auto-generated method stub
+		player.updatePlayer(plyrVelX, plyrVelY);
 		
 	}
 
@@ -172,24 +184,30 @@ public class Map extends GameState{
 	public void handleKeyDown(int keyCode) {
 		if(keyCode == KeyEvent.VK_LEFT) {
 			shiftX -= 10;
-			mdlX-=10;
-			player.setInitialX(mdlX-PLYR_WIDTH/2);
+			if(shiftX<SHIFTX_MIN){
+				shiftX = SHIFTX_MIN;
+			}
 		}
 		if(keyCode == KeyEvent.VK_RIGHT) {
 			shiftX += 10;
-			mdlX+=10;
-			player.setInitialX(mdlX-PLYR_WIDTH/2);
+			if(shiftX>SHIFTX_MAX){
+				shiftX = SHIFTX_MAX;
+			}
 		}
 		if(keyCode == KeyEvent.VK_UP) {
 			shiftY -= 10;
-			mdlY-=10;
-			player.setInitialY(mdlY-PLYR_HEIGHT/2);
+			if(shiftY<SHIFTY_MIN){
+				shiftY = SHIFTY_MIN;
+			}
 		}
 		if(keyCode == KeyEvent.VK_DOWN) {
 			shiftY += 10;
-			mdlY+=10;
-			player.setInitialY(mdlY-PLYR_HEIGHT/2);
+			if(shiftY>SHIFTY_MAX){
+				shiftY = SHIFTY_MAX;
+			}
+			
 		}
+		
 		
 	}
 
@@ -198,6 +216,11 @@ public class Map extends GameState{
 		// TODO Auto-generated method stub
 		if(keyCode == KeyEvent.VK_ESCAPE) {
 			host.setState("mainmenustate");
+		}
+		
+		if(keyCode == KeyEvent.VK_SPACE){
+			System.out.println("x0: "+x0+"\n"+"x1: "+x1+"\n"+"y0: "+y0+"\n"+"y1: "+y1+"\n"+"shiftX: "+shiftX+"\n"
+								+"shiftY: "+shiftY+"\n");
 		}
 	}
 	

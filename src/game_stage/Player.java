@@ -6,17 +6,33 @@ import java.awt.image.BufferedImage;
 public class Player {
 	
 	private BufferedImage image = null;
-	private int initialX;
-	private int initialY;
+	private int x;
+	private int y;
+	
+	int velX = 0;
+	int velY = 0;
 	
 	public Player(int x, int y, BufferedImage img){
-		initialX = x;
-		initialY = y;
+		this.x = x;
+		this.y = y;
 		image = img;
 	}
 
+	public void updatePlayer(int velX, int velY){
+		if(x+velX<0){
+			x = 0;
+		}
+		
+		if(y+velY<0){
+			y = 0;
+		}
+		
+		x+=velX;
+		y+=velY;
+	}
+	
 	public void renderPlayer(Graphics2D g, int sw, int sh){
-		g.drawImage(image, initialX, initialY, null);
+		g.drawImage(image, x, y, null);
 	}
 	
 	public BufferedImage getImage() {
@@ -27,20 +43,20 @@ public class Player {
 		this.image = image;
 	}
 
-	public int getInitialX() {
-		return initialX;
+	public int getX() {
+		return x;
 	}
 
-	public void setInitialX(int initialX) {
-		this.initialX = initialX;
+	public void setX(int X) {
+		this.x = X;
 	}
 
-	public int getInitialY() {
-		return initialY;
+	public int getY() {
+		return y;
 	}
 
-	public void setInitialY(int initialY) {
-		this.initialY = initialY;
+	public void setY(int Y) {
+		this.y = Y;
 	}
 	
 	

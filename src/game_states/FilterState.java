@@ -77,17 +77,26 @@ public class FilterState extends GameState
 	
 	private int[][] getMatrix(FilterType filterType) 
 	{
+		int[][] matrix;
 		switch(filterType)
 		{
-		case NEGATIVE: int matrix[][] = 
+		case NEGATIVE: matrix = new int[][] 
 				{
 					{ -1, 0, 0 },
 					{ 0, -1, 0 },
 					{ 0, 0, -1 }
 				}; break;
+		default:
+			matrix = new int[][] 
+				{
+					{ 1, 1, 1 },
+					{ 1, 1, 1 },
+					{ 1, 1, 1 }
+				};
+			break;
 		}
 		
-		return null;
+		return matrix;
 	}
 
 	public static int clamp(int value, int min, int max)

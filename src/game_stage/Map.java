@@ -6,6 +6,8 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+import game_states.FilterState.FilterType;
+import main.Model;
 import rafgfxlib.GameHost;
 import rafgfxlib.GameHost.GFMouseButton;
 import rafgfxlib.GameState;
@@ -34,24 +36,25 @@ public class Map extends GameState{
 	
 	private static final String stateName = "maingamestate";
 	
-	private Field classicField = null;
-	private Field specialField = null;
 	private Player player = null;
 	
 	private Field terainFields[] = new Field[9];
 	
 	private int shiftX = 0;
 	private int shiftY = 0;
-	int x0, x1, y0, y1;
-	int mdlX, mdlY;
-	int plyrVelX = 0;
-	int plyrVelY = 0;
-	int pos = 0;
+	private int x0, x1, y0, y1;
+	private int mdlX, mdlY;
+	private int plyrVelX = 0;
+	private int plyrVelY = 0;
+	private int pos = 0;
+	private int off;
 	
 	private GameHost host = null;
 	
 	private int fields[][] = new int[MAP_HEIGHT][MAP_WIDTH];
 	private boolean isSpecial[][] = new boolean[MAP_HEIGHT][MAP_WIDTH];
+	private FilterType fieldsType[][] = new FilterType[MAP_HEIGHT][MAP_WIDTH];
+	
 	private static int SHIFTX_MIN;
 	private static int SHIFTX_MAX;
 	private static int SHIFTY_MIN;
@@ -61,6 +64,7 @@ public class Map extends GameState{
 	private BufferedImage playerLeft[] = new BufferedImage[9];
 	private BufferedImage playerRight[] = new BufferedImage[9];
 	private BufferedImage playerDown[] = new BufferedImage[9];
+	private BufferedImage specialField = null;
 	
 	SpriteSheet plySS = null;
 	
@@ -70,6 +74,7 @@ public class Map extends GameState{
 		this.host = host;
 		initVariables();
 		initTerain();
+		initSpecialFields();
 		initPlayer();
 	}
 	
@@ -115,6 +120,12 @@ public class Map extends GameState{
 	}
 	
 	public void initSpecialFields(){
+		try{
+			specialField = Util.loadImage("/photos/redb.png");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		off = specialField.getHeight()-IMG_HEIGHT;
 		Random r = new Random();
 		for(int i = 0; i < SPEC_FLD_NUM; ){
 			int x = r.nextInt(MAP_WIDTH);
@@ -122,6 +133,7 @@ public class Map extends GameState{
 			if(!isSpecial[y][x]){
 				isSpecial[y][x] = true;
 				i++;
+				fieldsType[y][x] = FilterType.values()[r.nextInt(FilterType.values().length)];
 			}
 		}
 	}
@@ -144,11 +156,16 @@ public class Map extends GameState{
 			
 			for(int x = x0; x<=x1; x++){
 				g.drawImage(terainFields[fields[y][x]].getImage(), x*IMG_WIDTH-shiftX, y*IMG_HEIGHT-shiftY, null);
+				if(isSpecial[y][x]){
+					g.drawImage(specialField, x*IMG_WIDTH-shiftX, 
+								y*IMG_HEIGHT-shiftY-off, null);
+				}
 			}
 		}
 	}
 	
 	public void findIntersections(){
+		Model.selectedFilters.clear();
 		Rectangle plyrRect = new Rectangle(mdlX+shiftX-PLYR_WIDTH/2, mdlY+shiftY-PLYR_HEIGHT/2, PLYR_WIDTH, 
 				PLYR_HEIGHT);
 		Rectangle fldRect = null;
@@ -156,10 +173,13 @@ public class Map extends GameState{
 		for(int y = 0; y<MAP_HEIGHT; y++){
 			for(int x = 0; x<MAP_WIDTH; x++){
 				fldRect = new Rectangle(x*IMG_WIDTH, y*IMG_WIDTH, IMG_WIDTH, IMG_HEIGHT);
-				if(plyrRect.getBounds().intersects(fldRect.getBounds())){
-					System.out.println(y + " " + x);
+				if(isSpecial[y][x] && plyrRect.getBounds().intersects(fldRect.getBounds())){
+					Model.selectedFilters.add(fieldsType[y][x]);
 				}
 			}
+		}
+		for(FilterType ft:Model.selectedFilters){
+			System.out.println(ft);
 		}
 	}
 	

@@ -5,6 +5,7 @@ import java.awt.Toolkit;
 //import java.awt.image.WritableRaster;
 
 import game_stage.Map;
+import game_states.FilterState;
 import game_states.MainMenuState;
 import rafgfxlib.GameHost;
 //import rafgfxlib.ImageViewer;
@@ -71,8 +72,9 @@ public class Main {
 
 		new MainMenuState(host);
 		new Map(host);
+		new FilterState(host);
 		
-		host.setState("mainmenustate");
+		host.setState("filterstate");
 		
 		// GAME STATE je promenjen u maingamestate
 		

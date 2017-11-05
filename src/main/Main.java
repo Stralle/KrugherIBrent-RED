@@ -74,7 +74,7 @@ public class Main {
 		new Map(host);
 		new FilterState(host);
 		
-		host.setState("filterstate");
+		host.setState("mainmenustate");
 		
 		// GAME STATE je promenjen u maingamestate
 		

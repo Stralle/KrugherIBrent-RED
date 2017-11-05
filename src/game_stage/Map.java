@@ -294,6 +294,8 @@ public class Map extends GameState{
 		
 		if(keyCode == KeyEvent.VK_SPACE){
 			findIntersections();
+			if(Model.selectedFilters.size()>0)
+				host.setState("filterstate");
 		}
 		
 		if(keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_LEFT

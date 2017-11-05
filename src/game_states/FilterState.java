@@ -349,6 +349,10 @@ public class FilterState extends GameState
 		if(keyCode == KeyEvent.VK_F4) {
 			System.exit(0);
 		}
+		
+		if(keyCode == KeyEvent.VK_ESCAPE){
+			host.setState("maingamestate");
+		}
 	}
 
 	public BufferedImage getImageLeft() {

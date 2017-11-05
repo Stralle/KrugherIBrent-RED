@@ -10,6 +10,8 @@ public class SpriteSheet {
 	public SpriteSheet(BufferedImage img, int imgSz) {
 		this.img = img;
 		IMG_SIZE = imgSz;
+		
+		
 	}
 
 	public BufferedImage[] getRow(int row, int picsNr) {

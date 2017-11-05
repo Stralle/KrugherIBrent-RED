@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.util.Random;
 import main.Model;
@@ -294,6 +295,18 @@ public class FilterState extends GameState
 		int yR = (screenHeight / 2) - (imageHeight / 2);
 		
 		g.drawImage(imageLeft, xL,  yL, null);
+		
+		if(!Model.isFiltered){
+			//Sledece cetiri linije samo kopiraju sadrzaj iz right u left image
+			ColorModel cm = imageLeft.getColorModel();
+			boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+			WritableRaster raster = imageLeft.copyData(null);
+			imageRight = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+			for(FilterType filterType: Model.selectedFilters)
+				this.imageRight = makeImage(imageRight, filterType);
+			Model.isFiltered = true;
+		}
+		
 		g.drawImage(imageRight, xR, yR, null);
 		
 		g.setColor(Color.red);

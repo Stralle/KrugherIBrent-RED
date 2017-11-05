@@ -295,6 +295,7 @@ public class Map extends GameState{
 		if(keyCode == KeyEvent.VK_SPACE){
 			findIntersections();
 			if(Model.selectedFilters.size()>0)
+				Model.isFiltered = false;
 				host.setState("filterstate");
 		}
 		

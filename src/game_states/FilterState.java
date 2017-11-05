@@ -1,9 +1,12 @@
 package game_states;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-
+import java.util.Random;
 import main.Model;
 import rafgfxlib.GameHost;
 import rafgfxlib.GameHost.GFMouseButton;
@@ -20,8 +23,13 @@ public class FilterState extends GameState
 		BINARY,
 		GRAYSCALE,
 		POSTERIZE,
-		CONSTRAST,
-		EDGEDETECT
+		CONTRAST,
+		EDGEDETECT,
+		COLOREDNOISE,
+		BLUR,
+		SHARPEN,
+		EMBOSS,
+		BRIGHTNESS,
 	}
 
 	private BufferedImage imageLeft;
@@ -31,12 +39,128 @@ public class FilterState extends GameState
 	{
 		super(host);
 		this.imageLeft = Util.loadImage(Model.imagePath);
-		this.imageRight = makeImage(imageLeft, Model.filterType);		
+		this.imageRight = imageLeft;
+		for(FilterType filterType: Model.selectedFilters)
+			this.imageRight = makeImage(imageRight, filterType);	
 	}
 
 	private BufferedImage makeImage(BufferedImage image, FilterType filterType)
 	{
-		int[][] matrix = getMatrix(filterType);
+		switch(filterType)
+		{
+		case EDGEDETECT: case BLUR: case SHARPEN: case EMBOSS:
+			return this.makeImageFromMatrix(image, filterType);
+		default:
+			return this.makeImageRGB(image, filterType);
+		}
+	}
+	
+	private BufferedImage makeImageRGB(BufferedImage image, FilterType filterType)
+	{
+		
+		WritableRaster source = image.getRaster();
+		WritableRaster target = Util.createRaster(image.getWidth(), image.getHeight(), false);
+		
+		int rgb[] = new int[3];
+		int i;
+		
+		
+		for(int y = 0; y < image.getHeight(); y++)
+		{			
+			for(int x = 0; x < image.getWidth(); x++)
+			{
+				switch(filterType)
+				{
+				case WAVES: 
+					float power = 8.0f;
+					float size = 0.07f;
+					float srcX = (float)(x + Math.sin(y * size) * power);
+					float srcY = (float)(y + Math.cos(x * size) * power);
+					Util.bilSample(source, srcX, srcY, rgb);
+					target.setPixel(x, y, rgb); 
+					break;
+				
+				case FLIP:
+					source.getPixel(x, y, rgb);
+					target.setPixel(source.getWidth() - x - 1, y, rgb);
+					break;
+				
+				case NEGATIVE:
+					rgb[0] = 255 - rgb[0];
+					rgb[1] = 255 - rgb[1];
+					rgb[2] = 255 - rgb[2];
+					target.setPixel(x, y, rgb);
+					break;
+					
+				case BINARY:
+					source.getPixel(x, y, rgb);
+					i = (int)(rgb[0] * 0.30 + rgb[1] * 0.59 + rgb[2] * 0.11);
+					if(i > 160) i = 255;
+					else i = 0;					
+					rgb[0] = i;
+					rgb[1] = i;
+					rgb[2] = i;
+					target.setPixel(x, y, rgb);
+					break;
+					
+				case GRAYSCALE:
+					source.getPixel(x, y, rgb);
+					i = (int)(rgb[0] * 0.30 + rgb[1] * 0.59 + rgb[2] * 0.11);
+					rgb[0] = i;
+					rgb[1] = i;
+					rgb[2] = i;
+					target.setPixel(x, y, rgb);
+					break;
+				
+				case POSTERIZE:
+					source.getPixel(x, y, rgb);
+					rgb[0] = (rgb[0] / 50) * 50;
+					rgb[1] = (rgb[1] / 50) * 50;
+					rgb[2] = (rgb[2] / 50) * 50;
+					target.setPixel(x, y, rgb);
+					break;
+				
+				case CONTRAST:
+					source.getPixel(x, y, rgb);
+					double contrast = 1.5;
+					rgb[0] = saturate((int)((rgb[0] - 128) * contrast + 128));
+					rgb[1] = saturate((int)((rgb[1] - 128) * contrast + 128));
+					rgb[2] = saturate((int)((rgb[2] - 128) * contrast + 128));
+					target.setPixel(x, y, rgb);
+					break;
+				
+				case COLOREDNOISE:
+					int noise = 50;
+					Random rnd = new Random();
+					source.getPixel(x, y, rgb);
+					rgb[0] = saturate(rgb[0] + rnd.nextInt(noise) - noise / 2);
+					rgb[1] = saturate(rgb[1] + rnd.nextInt(noise) - noise / 2);
+					rgb[2] = saturate(rgb[2] + rnd.nextInt(noise) - noise / 2);
+					target.setPixel(x, y, rgb);
+					break;
+					
+				case BRIGHTNESS:
+					source.getPixel(x, y, rgb);
+					int brightness = 50;
+					rgb[0] = saturate(rgb[0] + brightness);
+					rgb[1] = saturate(rgb[1] + brightness);
+					rgb[2] = saturate(rgb[2] + brightness);
+					target.setPixel(x, y, rgb);
+					break;
+				
+				default:break;
+				}
+				
+				
+			}
+		}
+		
+		return Util.rasterToImage(target);
+	}
+	
+	private BufferedImage makeImageFromMatrix(BufferedImage image, FilterType filterType)
+	{
+		float[][] matrix = getMatrix(filterType);
 		
 		WritableRaster source = image.getRaster();
 		WritableRaster target = Util.createRaster(source.getWidth(), source.getHeight(), false);
@@ -58,9 +182,9 @@ public class FilterState extends GameState
 					{
 						source.getPixel(x + X - 1, y + Y - 1, rgb);
 						
-						pixel[0] += rgb[0] * matrix[X][Y];
-						pixel[1] += rgb[1] * matrix[X][Y];
-						pixel[2] += rgb[2] * matrix[X][Y];
+						pixel[0] += (int) (rgb[0] * matrix[X][Y]);
+						pixel[1] += (int) (rgb[1] * matrix[X][Y]);
+						pixel[2] += (int) (rgb[2] * matrix[X][Y]);
 					}
 				}
 				
@@ -75,23 +199,41 @@ public class FilterState extends GameState
 		return Util.rasterToImage(target);
 	}
 	
-	private int[][] getMatrix(FilterType filterType) 
+	private float[][] getMatrix(FilterType filterType) 
 	{
-		int[][] matrix;
+		float[][] matrix;
 		switch(filterType)
 		{
-		case NEGATIVE: matrix = new int[][] 
+		case BLUR: matrix = new float[][] 
 				{
-					{ -1, 0, 0 },
-					{ 0, -1, 0 },
-					{ 0, 0, -1 }
+					{ 0, 0.2f, 0 },
+					{ 0.2f, 0.2f, 0.2f },
+					{ 0, 0.2f, 0 }
+				}; break;
+		case EDGEDETECT: matrix = new float[][] 
+				{
+					{ -1, -1, -1 },
+					{ -1, 8, -1 },
+					{ -1, -1, -1 }
+				}; break;
+		case SHARPEN: matrix = new float[][] 
+				{
+					{ -1, -1, -1 },
+					{ -1, 9, -1 },
+					{ -1, -1, -1 }
+				}; break;
+		case EMBOSS: matrix = new float[][] 
+				{
+					{ -1, -1, 0 },
+					{ -1, 0, 1 },
+					{ 0, 1, 1 }
 				}; break;
 		default:
-			matrix = new int[][] 
+			matrix = new float[][] 
 				{
-					{ 1, 1, 1 },
-					{ 1, 1, 1 },
-					{ 1, 1, 1 }
+					{ 1, 0, 0 },
+					{ 0, 1, 0 },
+					{ 0, 0, 1 }
 				};
 			break;
 		}
@@ -120,8 +262,7 @@ public class FilterState extends GameState
 	@Override
 	public String getName()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return "filterstate";
 	}
 
 	@Override
@@ -141,7 +282,29 @@ public class FilterState extends GameState
 	@Override
 	public void render(Graphics2D g, int sw, int sh)
 	{
-		// TODO Auto-generated method stub
+		int screenWidth = this.host.getWidth();
+		int screenHeight = this.host.getHeight();
+		
+		int imageWidth = imageRight.getWidth();
+		int imageHeight = imageRight.getHeight();
+		
+		int xL = (screenWidth / 4) - (imageWidth / 2);
+		int yL = (screenHeight / 2) - (imageHeight / 2);
+		int xR = 3*(screenWidth / 4) - (imageWidth / 2);
+		int yR = (screenHeight / 2) - (imageHeight / 2);
+		
+		g.drawImage(imageLeft, xL,  yL, null);
+		g.drawImage(imageRight, xR, yR, null);
+		
+		g.setColor(Color.red);
+		g.drawRect(xL - 1, yL - 1, imageWidth + 2, imageHeight + 2);
+		g.drawRect(xR - 1, yR - 1, imageWidth + 2, imageHeight + 2);
+	
+		Font font = new Font("Serif" , Font.BOLD, 24);
+		g.setFont(font);
+		
+		g.drawString("Before Krugher&Brant RED", xL, yL / 2);
+		g.drawString("After Krugher&Brant RED", xR, yR / 2);
 		
 	}
 
@@ -183,8 +346,9 @@ public class FilterState extends GameState
 	@Override
 	public void handleKeyUp(int keyCode)
 	{
-		// TODO Auto-generated method stub
-		
+		if(keyCode == KeyEvent.VK_F4) {
+			System.exit(0);
+		}
 	}
 
 	public BufferedImage getImageLeft() {

@@ -87,6 +87,7 @@ public class FilterState extends GameState
 					break;
 				
 				case NEGATIVE:
+					source.getPixel(x, y, rgb);
 					rgb[0] = 255 - rgb[0];
 					rgb[1] = 255 - rgb[1];
 					rgb[2] = 255 - rgb[2];

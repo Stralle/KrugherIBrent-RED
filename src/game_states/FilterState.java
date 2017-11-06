@@ -33,13 +33,14 @@ public class FilterState extends GameState
 		BRIGHTNESS,
 	}
 
-	private BufferedImage imageLeft;
+	private static BufferedImage imageLeft;
 	private BufferedImage imageRight;
 	
 	public FilterState(GameHost host)
 	{
 		super(host);
-		this.imageLeft = Util.loadImage(Model.imagePath);
+//		setLeftImage(Util.loadImage(Model.imagePath));
+		setImageLeft(Model.getGlobalImage());
 		this.imageRight = imageLeft;
 		for(FilterType filterType: Model.selectedFilters)
 			this.imageRight = makeImage(imageRight, filterType);	
@@ -369,12 +370,12 @@ public class FilterState extends GameState
 		}
 	}
 
-	public BufferedImage getImageLeft() {
+	public static BufferedImage getImageLeft() {
 		return imageLeft;
 	}
 
-	public void setImageLeft(BufferedImage imageLeft) {
-		this.imageLeft = imageLeft;
+	public static void setImageLeft(BufferedImage imgLeft) {
+		imageLeft = imgLeft;
 	}
 
 	public BufferedImage getImageRight() {

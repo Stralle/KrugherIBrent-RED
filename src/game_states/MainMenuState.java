@@ -1,13 +1,16 @@
 package game_states;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+import main.Model;
 import rafgfxlib.GameHost;
 import rafgfxlib.GameHost.GFMouseButton;
 import rafgfxlib.GameState;
@@ -30,6 +33,17 @@ public class MainMenuState extends GameState {
 			private int speed;
 		}
 		
+		private static final int BUBBLE_MAX = 100;
+		
+		private static class Bubble {
+			private int posX;
+			private int posY;
+			private int speed;
+			private int life = 0;
+			private int width;
+			private int height;
+		}
+		
 		private enum MenuButton {
 			Start,
 			Upload,
@@ -47,6 +61,7 @@ public class MainMenuState extends GameState {
 		public BufferedImage globalImage = Util.loadImage("/photos/doge.png");
 				
 		private Beer[] beers = new Beer[BEER_MAX];
+		private Bubble[] bubbles = new Bubble[BUBBLE_MAX];
 		
 		private Image beerImage;
 		private Random random = new Random();
@@ -69,9 +84,21 @@ public class MainMenuState extends GameState {
 			for(int i = 0; i < BEER_MAX; ++i)
 			{
 				beers[i] = new Beer();
-				beers[i].posX = random.nextInt(host.getWidth() - 100);
-				beers[i].posY = 0;
+				beers[i].posX = random.nextInt(host.getWidth() - 150);
+				beers[i].posY = random.nextInt(10) - 150;
 				beers[i].speed = random.nextInt(10 + 1) + 10;
+			}
+			
+//			System.out.println("BUBBLES INIT");
+			for(int i = 0; i < BUBBLE_MAX; i++) {
+				bubbles[i] = new Bubble();
+				bubbles[i].posX = random.nextInt(host.getWidth());
+				bubbles[i].posY = random.nextInt(100)*(-1) + host.getHeight();
+				bubbles[i].speed = random.nextInt(10 + 1) + 5;
+				bubbles[i].life = random.nextInt(15) + 10;
+				bubbles[i].height = random.nextInt(10) + 20;
+				bubbles[i].width = random.nextInt(10) + 20;
+//				System.out.println(bubbles[i].posX + " " +bubbles[i].posY + " " +bubbles[i].speed + " " +bubbles[i].life + " " +bubbles[i].height + " " +bubbles[i].width);
 			}
 		}
 
@@ -227,6 +254,13 @@ public class MainMenuState extends GameState {
 				g.drawImage(beerImage, beer.posX, beer.posY, null);
 			}
 			
+			for(Bubble bubble : bubbles) {
+//				System.out.println("Draw bubble" + bubble.posX + " " + bubble.posY + " " + bubble.width + " " + bubble.height);
+				g.setColor(Color.WHITE);
+				g.drawOval(bubble.posX, bubble.posY, bubble.width, bubble.height);
+				g.fillOval(bubble.posX, bubble.posY, bubble.width, bubble.height);
+			}
+			
 			if(currentMenuType == MenuType.Default)
 				renderGameMenu(g, sw, sh, currentMenuButton);
 			if(currentMenuType == MenuType.About)
@@ -243,11 +277,28 @@ public class MainMenuState extends GameState {
 			for(Beer beer: beers) {
 				
 				if(beer.posY >= host.getHeight()) {
-					beer.posY = -200;
-					beer.posX = random.nextInt(host.getWidth());
+					beer.posY = -300;
+					beer.posX = random.nextInt(host.getWidth() - 100);
 				}
 				else {
 					beer.posY += beer.speed;
+				}
+				
+			}
+			
+			for(Bubble bubble: bubbles) {
+				
+				if(bubble.life <= 0) {
+					bubble.posX = random.nextInt(host.getWidth());
+					bubble.posY = random.nextInt(100)*(-1) + host.getHeight();
+					bubble.speed = random.nextInt(10 + 1) + 5;
+					bubble.life = random.nextInt(15) + 10;
+					bubble.height = random.nextInt(10) + 20;
+					bubble.width = random.nextInt(10) + 20;
+				}
+				else {
+					bubble.posY -= bubble.speed;
+					bubble.life--;
 				}
 				
 			}
@@ -269,11 +320,13 @@ public class MainMenuState extends GameState {
 				if(currentMenuType == MenuType.Default) {
 					if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //START
 						host.setState("maingamestate");
+						FilterState.setImageLeft(Model.getGlobalImage());
 					}
 					offsetY += 50;
 					if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //UPLOAD
 						//TODO: upload picture
 						globalImage = Util.browseForImage("", host.getWindow());
+						Model.setGlobalImage(globalImage);
 					}
 					offsetY += 50;
 					if(x >= offsetX - 5 && x <= offsetX - 5 + 200 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //CONTROLS

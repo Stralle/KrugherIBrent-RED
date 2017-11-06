@@ -189,7 +189,7 @@ public class Map extends GameState{
 
 	@Override
 	public boolean handleWindowClose() {
-		return true;
+		return false;
 	}
 
 	@Override

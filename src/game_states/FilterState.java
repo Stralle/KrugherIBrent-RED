@@ -7,6 +7,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
+import java.util.Hashtable;
 import java.util.Random;
 import main.Model;
 import rafgfxlib.GameHost;
@@ -35,7 +36,21 @@ public class FilterState extends GameState
 
 	private static BufferedImage imageLeft;
 	private BufferedImage imageRight;
+	private static boolean transition = false;
+
+	private int screenWidth;
+	private int screenHeight;
 	
+	private int imageWidth;
+	private int imageHeight;
+	
+	private int xL;
+	private int yL;
+	private int xR;
+	private int yR;	
+	
+	private int moveX;
+
 	public FilterState(GameHost host)
 	{
 		super(host);
@@ -44,8 +59,69 @@ public class FilterState extends GameState
 		this.imageRight = imageLeft;
 		for(FilterType filterType: Model.selectedFilters)
 			this.imageRight = makeImage(imageRight, filterType);	
+		
+		
+		screenWidth = this.host.getWidth();
+		screenHeight = this.host.getHeight();
+		
+		imageWidth = imageRight.getWidth();
+		imageHeight = imageRight.getHeight();
+		
+		xL = (screenWidth / 4) - (imageWidth / 2);
+		yL = (screenHeight / 2) - (imageHeight / 2);
+		xR = 3*(screenWidth / 4) - (imageWidth / 2);
+		yR = (screenHeight / 2) - (imageHeight / 2);
+		
+		moveX = xL;
+		
+	}
+	@Override
+	public void render(Graphics2D g, int sw, int sh)
+	{
+
+		
+		g.drawImage(imageLeft, moveX,  yL, null);
+		
+		
+		
+		if(!Model.isFiltered){
+			//Sledece cetiri linije samo kopiraju sadrzaj iz right u left image
+			ColorModel cm = imageLeft.getColorModel();
+			boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+			WritableRaster raster = imageLeft.copyData(null);
+			imageRight = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+			for(FilterType filterType: Model.selectedFilters)
+				this.imageRight = makeImage(imageRight, filterType);
+			Model.isFiltered = true;
+		}
+		
+
+		//g.drawImage(imageRight, xR, yR, null);
+		
+
+		
+		g.setColor(Color.red);
+		
+		g.drawRect(xR - 1, yR - 1, imageWidth + 2, imageHeight + 2);
+		g.drawRect(xL - 1, yL - 1, imageWidth + 2, imageHeight + 2);
+	
+		Font font = new Font("Serif" , Font.BOLD, 24);
+		g.setFont(font);
+		
+		g.drawString("Before Krugher&Brant RED", xL, yL / 2);
+		g.drawString("After Krugher&Brant RED", xR, yR / 2);
+		
 	}
 
+	@Override
+	public void update()
+	{
+	    if(moveX < xR)
+	    	moveX += 10;
+	    else moveX = xR;
+	}
+
+	
 	private BufferedImage makeImage(BufferedImage image, FilterType filterType)
 	{
 		switch(filterType)
@@ -282,54 +358,7 @@ public class FilterState extends GameState
 		
 	}
 
-	@Override
-	public void render(Graphics2D g, int sw, int sh)
-	{
-		int screenWidth = this.host.getWidth();
-		int screenHeight = this.host.getHeight();
-		
-		int imageWidth = imageRight.getWidth();
-		int imageHeight = imageRight.getHeight();
-		
-		int xL = (screenWidth / 4) - (imageWidth / 2);
-		int yL = (screenHeight / 2) - (imageHeight / 2);
-		int xR = 3*(screenWidth / 4) - (imageWidth / 2);
-		int yR = (screenHeight / 2) - (imageHeight / 2);
-		
-		g.drawImage(imageLeft, xL,  yL, null);
-		
-		if(!Model.isFiltered){
-			//Sledece cetiri linije samo kopiraju sadrzaj iz right u left image
-			ColorModel cm = imageLeft.getColorModel();
-			boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-			WritableRaster raster = imageLeft.copyData(null);
-			imageRight = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-			for(FilterType filterType: Model.selectedFilters)
-				this.imageRight = makeImage(imageRight, filterType);
-			Model.isFiltered = true;
-		}
-		
-		g.drawImage(imageRight, xR, yR, null);
-		
-		g.setColor(Color.red);
-		g.drawRect(xL - 1, yL - 1, imageWidth + 2, imageHeight + 2);
-		g.drawRect(xR - 1, yR - 1, imageWidth + 2, imageHeight + 2);
 	
-		Font font = new Font("Serif" , Font.BOLD, 24);
-		g.setFont(font);
-		
-		g.drawString("Before Krugher&Brant RED", xL, yL / 2);
-		g.drawString("After Krugher&Brant RED", xR, yR / 2);
-		
-	}
-
-	@Override
-	public void update()
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
 	@Override
 	public void handleMouseDown(int x, int y, GFMouseButton button)
 	{

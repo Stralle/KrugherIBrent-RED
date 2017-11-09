@@ -7,13 +7,13 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
-import java.util.Hashtable;
 import java.util.Random;
 import main.Model;
 import rafgfxlib.GameHost;
 import rafgfxlib.GameHost.GFMouseButton;
 import rafgfxlib.GameState;
 import rafgfxlib.Util;
+
 
 public class FilterState extends GameState
 {
@@ -36,7 +36,7 @@ public class FilterState extends GameState
 
 	private static BufferedImage imageLeft;
 	private BufferedImage imageRight;
-	private static boolean transition = false;
+	private BufferedImage imageSpiral;
 
 	private int screenWidth;
 	private int screenHeight;
@@ -50,10 +50,13 @@ public class FilterState extends GameState
 	private int yR;	
 	
 	private int moveX;
+	private Pixel pixel;
 
 	public void resetStats()
 	{
 		moveX = xL;
+		pixel = new Pixel(imageWidth, imageHeight);
+		imageSpiral = this.imageBlack(imageLeft);
 	}
 	
 	public FilterState(GameHost host)
@@ -79,17 +82,12 @@ public class FilterState extends GameState
 		
 		moveX = xL;
 		
+		this.pixel = new Pixel(imageWidth, imageHeight);
+		this.imageSpiral = this.imageBlack(imageLeft);		
 	}
 	@Override
 	public void render(Graphics2D g, int sw, int sh)
-	{
-
-		
-		
-		
-		g.drawImage(this.imageAlpha(imageLeft, imageRight), moveX,  yL, null);
-		
-		
+	{	
 		
 		if(!Model.isFiltered){
 			//Sledece cetiri linije samo kopiraju sadrzaj iz right u left image
@@ -102,30 +100,181 @@ public class FilterState extends GameState
 			Model.isFiltered = true;
 		}
 		
-
-		//g.drawImage(imageRight, xR, yR, null);
+		if(moveX < xR)
+		{
+			g.drawImage(this.imageAlpha(imageLeft, imageRight), moveX,  yL, null);
+			
+		}
+			
+		else
+		{
+			if(pixel.move != Move.STOP)
+			{
+				this.imageSpiral = this.imageSpiral(imageSpiral, imageLeft);
+				g.drawImage(this.imageSpiral, xL, yL, null);
+				
+				g.setColor(Color.red);
+				g.drawImage(imageRight, xR, yR, null);
+				Font font = new Font("Serif" , Font.BOLD, 24);
+				g.setFont(font);
+				g.drawRect(xR - 1, yR - 1, imageWidth + 2, imageHeight + 2);
+				g.drawString("After Krugher&Brant RED", xR, yR / 2);
+				
+			}
+			else
+			{
+			g.drawImage(imageLeft, xL, yL, null);
+			g.drawImage(imageRight, xR, yR, null);
+			
+			g.setColor(Color.red);
+			
+			g.drawRect(xR - 1, yR - 1, imageWidth + 2, imageHeight + 2);
+			g.drawRect(xL - 1, yL - 1, imageWidth + 2, imageHeight + 2);
+		
+			Font font = new Font("Serif" , Font.BOLD, 24);
+			g.setFont(font);
+			
+			g.drawString("Before Krugher&Brant RED", xL, yL / 2);
+			g.drawString("After Krugher&Brant RED", xR, yR / 2);
+			}
+		}
 		
 
-		
-		g.setColor(Color.red);
-		
-		g.drawRect(xR - 1, yR - 1, imageWidth + 2, imageHeight + 2);
-		g.drawRect(xL - 1, yL - 1, imageWidth + 2, imageHeight + 2);
 	
-		Font font = new Font("Serif" , Font.BOLD, 24);
-		g.setFont(font);
-		
-		g.drawString("Before Krugher&Brant RED", xL, yL / 2);
-		g.drawString("After Krugher&Brant RED", xR, yR / 2);
 		
 	}
-
+	
 	@Override
 	public void update()
 	{
 	    if(moveX < xR)
 	    	moveX += 10;
 	    else moveX = xR;
+	}
+	
+	public enum Move
+	{
+		UP,
+		RIGHT,
+		LEFT,
+		DOWN,
+		STOP,
+	}
+	
+	
+	private BufferedImage imageSpiral(BufferedImage imageSpiral, BufferedImage imageOriginal)
+	{
+		WritableRaster source= imageOriginal.getRaster() ;
+		WritableRaster target = imageSpiral.getRaster();
+		for(int i = 0 ; i < 5000; i++)
+		{
+		source = imageOriginal.getRaster();
+		target = imageSpiral.getRaster();
+		
+		int rgb[] = new int[3];
+		source.getPixel(this.pixel.x, this.pixel.y, rgb);
+		this.pixel.move();
+		target.setPixel(this.pixel.x, this.pixel.y, rgb);
+		
+		
+		}
+		return Util.rasterToImage(target);
+	}
+	public class Pixel
+	{
+		public int x;
+		private int y;
+		private int xLeft;
+		private int xRight;
+		private int yTop;
+		private int yBottom;
+		private Move move;
+
+		public Pixel(int imageWidth, int imageHeight)
+		{
+			this.x = 0;
+			this.y = 0;
+			this.xLeft = 0;
+			this.xRight = imageWidth - 1;
+			this.yTop = 0;
+			this.yBottom = imageHeight;
+			this.move = Move.DOWN;
+		}
+		
+		public void move()
+		{
+			
+			
+			System.out.println(x + ":" + y + ":" + move);
+			if(!(xRight - x == x - xLeft && yBottom - y ==  y - yTop ))
+			{
+				switch(move)
+				{
+				case UP: 
+					this.y --; 
+					if(y == yTop + 1)
+					{
+						move = Move.LEFT;
+						this.xRight --;
+					}
+					break;
+				case DOWN:
+					this.y ++;
+					if(y == yBottom - 1)
+						{
+						move = Move.RIGHT;
+						this.xLeft ++;
+						}	
+					break;
+				case LEFT:
+					this.x --; 
+					if(x == xLeft + 1)
+					{
+						move = Move.DOWN;
+						this.yTop ++;
+					}
+					break;
+				case RIGHT:
+					this.x ++; 
+					if(x == xRight - 1)
+					{
+						move = Move.UP;
+						this.yBottom --;
+					}
+					break;
+				default:
+					break;
+				}
+			}
+			else
+			{
+				move = Move.STOP;
+				System.out.println(yTop + ":" + yBottom);
+			}
+		}
+		
+	}
+	
+	
+	private BufferedImage imageBlack(BufferedImage image)
+	{
+		WritableRaster source = image.getRaster();
+		WritableRaster target = Util.createRaster(source.getWidth(), source.getHeight(), false);
+		
+		int rgb[] = new int[3];
+		rgb[0] = 0;
+		rgb[1] = 0;
+		rgb[2] = 0;
+		
+		for(int y = 0; y < source.getHeight() ; y++)
+		{
+			for(int x = 0; x < source.getWidth(); x++)
+			{	
+				target.setPixel(x, y, rgb);
+			}
+		}
+		
+		return Util.rasterToImage(target);
 	}
 
 	private BufferedImage imageAlpha(BufferedImage imageLeft, BufferedImage imageRight)
@@ -138,10 +287,9 @@ public class FilterState extends GameState
 		int rgbRight[] = new int[3];
 		
 		int width = this.xR - this.xL;
-		float alpha = (float) moveX / (float) width; 
+		float alpha = (float) (moveX - this.xL) / (float) width; 
 		if(alpha > 1.0f)
 			alpha = 1.0f;
-		System.out.println(width + " / " + moveX + " = " + alpha);
 		
 		for(int y = 0; y < sourceLeft.getHeight(); y++)
 		{

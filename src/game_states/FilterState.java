@@ -80,7 +80,9 @@ public class FilterState extends GameState
 	{
 
 		
-		g.drawImage(imageLeft, moveX,  yL, null);
+		
+		
+		g.drawImage(this.imageAlpha(imageLeft, imageRight), moveX,  yL, null);
 		
 		
 		
@@ -121,6 +123,38 @@ public class FilterState extends GameState
 	    else moveX = xR;
 	}
 
+	private BufferedImage imageAlpha(BufferedImage imageLeft, BufferedImage imageRight)
+	{
+		WritableRaster sourceLeft = imageLeft.getRaster();
+		WritableRaster sourceRight = imageRight.getRaster();
+		WritableRaster target = Util.createRaster(sourceLeft.getWidth(), sourceLeft.getHeight(), false);
+		
+		int rgbLeft[] = new int[3];
+		int rgbRight[] = new int[3];
+		
+		int width = this.xR - this.xL;
+		float alpha = (float) moveX / (float) width; 
+		if(alpha > 1.0f)
+			alpha = 1.0f;
+		System.out.println(width + " / " + moveX + " = " + alpha);
+		
+		for(int y = 0; y < sourceLeft.getHeight(); y++)
+		{
+			for(int x = 0; x < sourceLeft.getWidth(); x++)
+			{
+				sourceLeft.getPixel(x, y, rgbLeft);
+				sourceRight.getPixel(x, y, rgbRight);
+				
+				rgbLeft[0] = Util.lerpI(rgbLeft[0], rgbRight[0], alpha);
+				rgbLeft[1] = Util.lerpI(rgbLeft[1], rgbRight[1], alpha);
+				rgbLeft[2] = Util.lerpI(rgbLeft[2], rgbRight[2], alpha);
+				
+				target.setPixel(x, y, rgbLeft);
+			}	
+		}
+		
+		return Util.rasterToImage(target);
+	}
 	
 	private BufferedImage makeImage(BufferedImage image, FilterType filterType)
 	{

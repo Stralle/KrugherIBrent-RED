@@ -15,6 +15,8 @@ import rafgfxlib.Util;
 
 public class Main {
 
+	public static FilterState filter;
+	
 	public static void main(String[] args) 
 	{
 	
@@ -29,7 +31,7 @@ public class Main {
 
 		new MainMenuState(host);
 		new Map(host);
-		new FilterState(host);
+		filter = new FilterState(host);
 		
 		host.setState("mainmenustate");
 		

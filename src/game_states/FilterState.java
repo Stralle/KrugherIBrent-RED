@@ -51,6 +51,11 @@ public class FilterState extends GameState
 	
 	private int moveX;
 
+	public void resetStats()
+	{
+		moveX = xL;
+	}
+	
 	public FilterState(GameHost host)
 	{
 		super(host);

@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import game_states.FilterState.FilterType;
+import main.Main;
 import main.Model;
 import rafgfxlib.GameHost;
 import rafgfxlib.GameHost.GFMouseButton;
@@ -296,6 +297,7 @@ public class Map extends GameState{
 			findIntersections();
 			if(Model.selectedFilters.size()>0)
 				Model.isFiltered = false;
+				Main.filter.resetStats();
 				host.setState("filterstate");
 		}
 		

@@ -64,16 +64,24 @@ public class FilterState extends GameState
 		super(host);
 //		setLeftImage(Util.loadImage(Model.imagePath));
 		setImageLeft(Model.getGlobalImage());
+		
+		screenWidth = this.host.getWidth();
+		screenHeight = this.host.getHeight();
+		
+		if(imageLeft.getWidth() > 5 * this.screenWidth / 12 || imageLeft.getHeight() >  5 * this.screenHeight / 12)
+		{
+			FilterState.imageLeft = imageScale(imageLeft);
+		}	
+		
 		this.imageRight = imageLeft;
 		for(FilterType filterType: Model.selectedFilters)
 			this.imageRight = makeImage(imageRight, filterType);	
 		
 		
-		screenWidth = this.host.getWidth();
-		screenHeight = this.host.getHeight();
+	
 		
-		imageWidth = imageRight.getWidth();
-		imageHeight = imageRight.getHeight();
+		imageWidth = imageLeft.getWidth();
+		imageHeight = imageLeft.getHeight();
 		
 		xL = (screenWidth / 4) - (imageWidth / 2);
 		yL = (screenHeight / 2) - (imageHeight / 2);
@@ -85,6 +93,8 @@ public class FilterState extends GameState
 		this.pixel = new Pixel(imageWidth, imageHeight);
 		this.imageSpiral = this.imageBlack(imageLeft);		
 	}
+	
+	
 	@Override
 	public void render(Graphics2D g, int sw, int sh)
 	{	
@@ -124,7 +134,10 @@ public class FilterState extends GameState
 			else
 			{
 			g.drawImage(imageLeft, xL, yL, null);
-			g.drawImage(imageRight, xR, yR, null);
+			//g.drawImage(imageRight, xR, yR, null);
+			
+			g.drawImage(Model.getGlobalImage(), xR, yR, null);
+			
 			
 			g.setColor(Color.red);
 			
@@ -159,6 +172,40 @@ public class FilterState extends GameState
 		LEFT,
 		DOWN,
 		STOP,
+	}
+	
+	public BufferedImage imageScale(BufferedImage image)
+	{
+		System.out.println("bam");
+		WritableRaster source = image.getRaster() ;
+		
+		int widthNew = (5 * this.screenWidth) / 12 ;
+		int heightNew = (5 * this.screenHeight) / 12;
+	
+		
+		WritableRaster target = Util.createRaster(widthNew, heightNew, false);
+		
+		double xRatio = source.getWidth() / (double) widthNew;
+		double yRatio = source.getHeight() / (double) heightNew;
+		
+		int px,py;
+		
+		int rgb[] = new int[3];
+		
+		for(int i = 0; i < heightNew; i++)
+		{
+			for(int j = 0; j < widthNew; j++)
+			{
+				px = (int) Math.floor(j * xRatio);
+				py = (int) Math.floor(i * yRatio);
+				
+				source.getPixel(px, py, rgb);
+				target.setPixel(j, i, rgb);
+				
+			}
+		}
+		
+		return Util.rasterToImage(target);
 	}
 	
 	
@@ -204,8 +251,6 @@ public class FilterState extends GameState
 		public void move()
 		{
 			
-			
-			System.out.println(x + ":" + y + ":" + move);
 			if(!(xRight - x == x - xLeft && yBottom - y ==  y - yTop ))
 			{
 				switch(move)
@@ -249,7 +294,7 @@ public class FilterState extends GameState
 			else
 			{
 				move = Move.STOP;
-				System.out.println(yTop + ":" + yBottom);
+
 			}
 		}
 		

@@ -1,13 +1,12 @@
 package game_states;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.util.Random;
 
 import main.Model;
@@ -33,7 +32,7 @@ public class MainMenuState extends GameState {
 			private int speed;
 		}
 		
-		private static final int BUBBLE_MAX = 100;
+		private static final int BUBBLE_MAX = 200;
 		
 		private static class Bubble {
 			private int posX;
@@ -58,7 +57,8 @@ public class MainMenuState extends GameState {
 			Controls,
 		}
 		
-		public BufferedImage globalImage = Util.loadImage("/photos/doge.png");
+		public BufferedImage globalImage = Util.loadImage("/photos/drunk.jpg");
+		private BufferedImage backgroundImage = null;
 				
 		private Beer[] beers = new Beer[BEER_MAX];
 		private Bubble[] bubbles = new Bubble[BUBBLE_MAX];
@@ -71,6 +71,8 @@ public class MainMenuState extends GameState {
 		
 		private MenuButton currentMenuButton = null;
 		private MenuType currentMenuType = MenuType.Default;
+		
+		private int start = 1;
 		
 		public MainMenuState(GameHost host) {
 			super(host);
@@ -89,7 +91,6 @@ public class MainMenuState extends GameState {
 				beers[i].speed = random.nextInt(10 + 1) + 10;
 			}
 			
-//			System.out.println("BUBBLES INIT");
 			for(int i = 0; i < BUBBLE_MAX; i++) {
 				bubbles[i] = new Bubble();
 				bubbles[i].posX = random.nextInt(host.getWidth());
@@ -98,8 +99,8 @@ public class MainMenuState extends GameState {
 				bubbles[i].life = random.nextInt(15) + 10;
 				bubbles[i].height = random.nextInt(10) + 20;
 				bubbles[i].width = random.nextInt(10) + 20;
-//				System.out.println(bubbles[i].posX + " " +bubbles[i].posY + " " +bubbles[i].speed + " " +bubbles[i].life + " " +bubbles[i].height + " " +bubbles[i].width);
 			}
+			
 		}
 
 		@Override
@@ -115,12 +116,12 @@ public class MainMenuState extends GameState {
 
 		public void renderGameMenu(Graphics2D g, int sw, int sh, MenuButton menuButton) {
 			
-			int startX = host.getWidth() / 2 - 100;
+			int startX = host.getWidth() / 2 - 200;
 			int startY = host.getHeight() / 2 - 150;
 			int offsetX = startX + 25;
 			int offsetY = startY + 50;
 			
-			Font font = new Font("Serif", Font.BOLD, 24);
+			Font font = new Font("Serif", Font.ITALIC, 36);
 			g.setFont(font);
 			g.setColor(defaultColor);
 			
@@ -247,15 +248,53 @@ public class MainMenuState extends GameState {
 			
 		}
 		
+		public void renderBackground(Graphics2D g, int sw, int sh) {
+			BufferedImage image = Util.loadImage("/photos/beerland.jpg");
+			
+			if(image == null) { System.out.println("Nema slike!"); return; }
+			
+			WritableRaster source = image.getRaster();
+			WritableRaster target = Util.createRaster(sw, sh, false);
+			
+			int rgb[] = new int[3];
+			
+			// Snaga distorzije
+			float power = 8.0f;
+			// Velicina talasa
+			float size = 0.07f;
+			
+			for(int y = 0; y < target.getHeight(); y++)
+			{			
+				for(int x = 0; x < target.getWidth(); x++)
+				{
+					// Funkcijama sin() i cos() deformisemo koordinate
+					float srcX = (float)(x + Math.sin(y * size) * power);
+					float srcY = (float)(y + Math.cos(x * size) * power);
+					
+					// Koristimo deformisane koordinate za citanje bilinearnog uzorka
+					Util.bilSample(source, srcX, srcY, rgb);
+					target.setPixel(x, y, rgb);
+				}
+			}
+			
+			backgroundImage = Util.rasterToImage(target);
+//			g.drawImage(Util.rasterToImage(target), 0, 0, null);
+			
+		}
+		
 		@Override
 		public void render(Graphics2D g, int sw, int sh) {	
+			if(start == 1) {
+				renderBackground(g, sw, sh);
+				start = 0;
+			}
+			g.drawImage(backgroundImage, 0, 0, null);
 			
 			for(Beer beer : beers) {	
 				g.drawImage(beerImage, beer.posX, beer.posY, null);
 			}
 			
 			for(Bubble bubble : bubbles) {
-//				System.out.println("Draw bubble" + bubble.posX + " " + bubble.posY + " " + bubble.width + " " + bubble.height);
 				g.setColor(Color.WHITE);
 				g.drawOval(bubble.posX, bubble.posY, bubble.width, bubble.height);
 				g.fillOval(bubble.posX, bubble.posY, bubble.width, bubble.height);
@@ -268,7 +307,6 @@ public class MainMenuState extends GameState {
 			if(currentMenuType == MenuType.Controls)
 				renderControls(g, sw, sh);
 			
-//			g.drawImage(globalImage, null, 50, 50);
 			
 		}
 
@@ -310,7 +348,7 @@ public class MainMenuState extends GameState {
 
 		@Override
 		public void handleMouseUp(int x, int y, GFMouseButton button) { 
-			int startX = host.getWidth() / 2 - 100;
+			int startX = host.getWidth() / 2 - 200;
 			int startY = host.getHeight() / 2 - 150;
 			int offsetX = startX + 25;
 			int offsetY = startY + 50;
@@ -346,7 +384,7 @@ public class MainMenuState extends GameState {
 
 		@Override
 		public void handleMouseMove(int x, int y) { 
-			int startX = host.getWidth() / 2 - 100;
+			int startX = host.getWidth() / 2 - 200;
 			int startY = host.getHeight() / 2 - 150;
 			int offsetX = startX + 25;
 			int offsetY = startY + 50;
@@ -399,10 +437,6 @@ public class MainMenuState extends GameState {
 			if(keyCode == KeyEvent.VK_ESCAPE && currentMenuType != MenuType.Default) {
 				currentMenuType = MenuType.Default;
 			}
-			//TODO: HOW TO EDIT HIS CLASS?
-//			if(keyCode == KeyEvent.VK_F5) {
-//				host.setFullscreenMode(true);
-//			}
 		}
 
 		@Override

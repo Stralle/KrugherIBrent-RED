@@ -65,6 +65,7 @@ public class MainMenuState extends GameState {
 		
 		private Image beerImage;
 		private Image controlsImage;
+		private Image aboutImage;
 		private Random random = new Random();
 		
 		private Color stringColor = Color.CYAN;
@@ -207,8 +208,8 @@ public class MainMenuState extends GameState {
 			output[1] = lerp(a[1], b[1], x);
 			output[2] = lerp(a[2], b[2], x);
 		}
-		
-		public void renderAbout(Graphics2D g, int sw, int sh) {
+
+		public void aboutBackground() {
 			
 			WritableRaster raster = Util.createRaster(500, 250, false);
 
@@ -256,12 +257,17 @@ public class MainMenuState extends GameState {
 				}
 			}
 			
+			aboutImage = Util.rasterToImage(raster);
+		}
+		
+		public void renderAbout(Graphics2D g, int sw, int sh) {
+
 			int startX = host.getWidth() / 2 - 200;
 			int startY = host.getHeight() / 2 - 250;
 			int offsetX = startX + 25;
 			int offsetY = startY + 150;
 
-			g.drawImage(Util.rasterToImage(raster), offsetX-5, offsetY-30, null);
+			g.drawImage(aboutImage, offsetX-5, offsetY-30, null);
 			
 			Font font = new Font("Serif", Font.BOLD, 24);
 			g.setFont(font);
@@ -445,6 +451,7 @@ public class MainMenuState extends GameState {
 			if(start == 1) {
 				renderBackground(g, sw, sh);
 				controlsBackground();
+				aboutBackground();
 				start = 0;
 			}
 			g.drawImage(backgroundImage, 0, 0, null);

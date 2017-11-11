@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.Random;
@@ -64,9 +65,15 @@ public class MainMenuState extends GameState {
 		private Bubble[] bubbles = new Bubble[BUBBLE_MAX];
 		
 		private Image beerImage;
-		private Image controlsImage;
-		private Image aboutImage;
+		private Image corkImage;
+//		private Image controlsImage;
+//		private Image aboutImage;
 		private Random random = new Random();
+		
+//		private int quit = 0;
+
+		private float imageAngle = (float)(Math.random() * Math.PI * 2.0);
+		private float imageRot = (float)(Math.random() - 0.5) * 0.1f;
 		
 		private Color stringColor = Color.CYAN;
 		private Color defaultColor = Color.CYAN;
@@ -76,11 +83,29 @@ public class MainMenuState extends GameState {
 		
 		private int start = 1;
 		
+		private int clampx(int x) {
+			if(x > host.getWidth() - 200) {
+				return host.getWidth() - 200;
+			}
+			if(x < 200) {
+				return 200;
+			}
+			return x;
+		}
+
+		private int clampy(int x) {
+			if(x > host.getHeight() - 50) {
+				return host.getHeight() - 50;
+			}
+			return x;
+		}
+		
 		public MainMenuState(GameHost host) {
 			super(host);
 			
 			try {
 				beerImage = Util.loadImage("/photos/redbeer.png");
+				corkImage = Util.loadImage("/photos/cork.png");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -95,8 +120,8 @@ public class MainMenuState extends GameState {
 			
 			for(int i = 0; i < BUBBLE_MAX; i++) {
 				bubbles[i] = new Bubble();
-				bubbles[i].posX = random.nextInt(host.getWidth());
-				bubbles[i].posY = random.nextInt(100)*(-1) + host.getHeight();
+				bubbles[i].posX = clampx(random.nextInt(host.getWidth()));
+				bubbles[i].posY = clampy(random.nextInt(100)*(-1) + host.getHeight());
 				bubbles[i].speed = random.nextInt(10 + 1) + 5;
 				bubbles[i].life = random.nextInt(15) + 10;
 				bubbles[i].height = random.nextInt(10) + 20;
@@ -232,7 +257,7 @@ public class MainMenuState extends GameState {
 					
 			int bojaDD[] = new int[3];
 			bojaDD[0] = 255;
-			bojaDD[1] = 255;
+			bojaDD[1] = 5;
 			bojaDD[2] = 255;
 			
 			int tmpG[] = new int[3];
@@ -251,13 +276,15 @@ public class MainMenuState extends GameState {
 					
 					lerpRGB(rgb, tmpG, tmpD, fY);
 					
-					if((x+y)%20 == 1 || (x-y)%3 != 0 || (x+y)%7 != 0) {
+					if((x+y)%3 != 0 && (x+y)%2 != 0  && (x+y)%5 != 0 && (x+y)%7 != 0 ||
+						(x-y)%3 != 0 && (x-y)%2 != 0  && (x-y)%5 != 0 && (x-y)%7 != 0) {
+
 						raster.setPixel(x, y, rgb);
 					}
 				}
 			}
 			
-			aboutImage = Util.rasterToImage(raster);
+//			aboutImage = Util.rasterToImage(raster);
 		}
 		
 		public void renderAbout(Graphics2D g, int sw, int sh) {
@@ -267,37 +294,54 @@ public class MainMenuState extends GameState {
 			int offsetX = startX + 25;
 			int offsetY = startY + 150;
 
-			g.drawImage(aboutImage, offsetX-5, offsetY-30, null);
+			Color bgColor = Color.GRAY;
+			int shadowX = 2;
+			int shadowY = 2;
+			
+//			g.drawImage(aboutImage, offsetX-5, offsetY-30, null);
 			
 			Font font = new Font("Serif", Font.BOLD, 24);
 			g.setFont(font);
-			g.setColor(defaultColor);
 			
+			g.setColor(bgColor);
+			g.drawString("Long time ago, in a brewery far far ago...", offsetX + shadowX, offsetY - shadowY);
+			
+			g.setColor(defaultColor);
 			g.drawString("Long time ago, in a brewery far far ago...", offsetX, offsetY);
 			offsetY += 30;
+			
+			g.setColor(bgColor);
+			g.drawString("Krugher & Brent RED was invented", offsetX + shadowX, offsetY - shadowY);
+			
+			g.setColor(defaultColor);
 			g.drawString("Krugher & Brent RED was invented", offsetX, offsetY);
 			offsetY += 30;
+			
+			g.setColor(bgColor);
+			g.drawString("And a dwarf has drinked it all.", offsetX + shadowX, offsetY - shadowY);
+			
+			g.setColor(defaultColor);
 			g.drawString("And a dwarf has drinked it all.", offsetX, offsetY);
 			offsetY += 70;
 			
-			g.setColor(Color.GRAY);
-			g.drawString("Developed by: nvkvkc, SeriousFresh and Stralle", offsetX+2, offsetY-2);
+			g.setColor(bgColor);
+			g.drawString("Developed by: nvkvkc, SeriousFresh and Stralle", offsetX + shadowX, offsetY - shadowY);
 			
-			g.setColor(Color.BLACK);
+			g.setColor(defaultColor);
 			g.drawString("Developed by: nvkvkc, SeriousFresh and Stralle", offsetX, offsetY);
 			offsetY += 50;
 			
 			offsetX += 35;
 			
-			g.setColor(Color.DARK_GRAY);
-			g.drawString("Press ESC to go back", offsetX+2, offsetY-2);
+			g.setColor(bgColor);
+			g.drawString("Press ESC to go back", offsetX + shadowX, offsetY - shadowY);
 			g.setColor(Color.RED);
 			g.drawString("Press ESC to go back", offsetX, offsetY);
 			
 		}
 
 		public void controlsBackground() {
-			WritableRaster raster = Util.createRaster(400, 260, false);
+			WritableRaster raster = Util.createRaster(400, 300, false);
 
 			int rgb[] = new int[4];
 			
@@ -337,13 +381,20 @@ public class MainMenuState extends GameState {
 					
 					lerpRGB(rgb, tmpG, tmpD, fY);
 					
-					if((x+y)%20 == 1 || (x-y)%3 != 0 || (x+y)%7 != 0) {
-						raster.setPixel(x, y, rgb);
+					if((x+y)%3 != 0 && (x+y)%5 != 0 && (x+y)%7 != 0 &&
+						(x-y)%3 != 0 && (x-y)%5 != 0 && (x-y)%7 != 0) {
+						
+						rgb[0] = 0;
+						rgb[1] = random.nextInt(256);
+						rgb[2] = 0;
 					}
+
+					raster.setPixel(x, y, rgb);
+					
 				}
 			}
 			
-			controlsImage = Util.rasterToImage(raster);
+//			controlsImage = Util.rasterToImage(raster);
 		}
 		
 		public void renderControls(Graphics2D g, int sw, int sh) {
@@ -352,26 +403,62 @@ public class MainMenuState extends GameState {
 			int offsetX = startX + 25;
 			int offsetY = startY + 50;
 
-			g.drawImage(controlsImage, offsetX-5, offsetY-30, null);
+			Color bgColor = Color.RED;
+			int shadowX = 2;
+			int shadowY = 2;
 			
 			Font font = new Font("Serif", Font.BOLD, 24);
 			g.setFont(font);
-			g.setColor(Color.GREEN);
 			
 			offsetX += 85;
-			g.drawString("		  CONTROLS", offsetX, offsetY);
+			
+			g.setColor(bgColor);
+			g.drawString("CONTROLS", offsetX + shadowX, offsetY - shadowY);
+			
+			g.setColor(Color.GREEN);
+			g.drawString("CONTROLS", offsetX, offsetY);
+			
 			offsetY += 50;
 			offsetX -= 85;
+			
+			g.setColor(bgColor);
+			g.drawString("LEFT ARROW == MOVE LEFT", offsetX + shadowX, offsetY - shadowY);
+			
 			g.setColor(defaultColor);
 			g.drawString("LEFT ARROW == MOVE LEFT", offsetX, offsetY);
+			
 			offsetY += 30;
+			
+			g.setColor(bgColor);
+			g.drawString("RIGHT ARROW == MOVE RIGHT", offsetX + shadowX, offsetY - shadowY);
+			
+			g.setColor(defaultColor);
 			g.drawString("RIGHT ARROW == MOVE RIGHT", offsetX, offsetY);
+			
 			offsetY += 30;
-			g.drawString("UP ARROW== MOVE UP", offsetX, offsetY);
+			
+			g.setColor(bgColor);
+			g.drawString("UP ARROW == MOVE UP", offsetX + shadowX, offsetY - shadowY);
+			
+			g.setColor(defaultColor);
+			g.drawString("UP ARROW == MOVE UP", offsetX, offsetY);
+			
 			offsetY += 30;
+			
+			g.setColor(bgColor);
+			g.drawString("DOWN ARROW == MOVE DOWN", offsetX + shadowX, offsetY - shadowY);
+			
+			g.setColor(defaultColor);
 			g.drawString("DOWN ARROW == MOVE DOWN", offsetX, offsetY);
+			
 			offsetY += 30;
+			
+			g.setColor(bgColor);
+			g.drawString("SPACE == APPLY FILTER", offsetX + shadowX, offsetY - shadowY);
+			
+			g.setColor(defaultColor);
 			g.drawString("SPACE == APPLY FILTER", offsetX, offsetY);
+			
 			offsetY += 50;
 
 			offsetX += 70;
@@ -399,8 +486,7 @@ public class MainMenuState extends GameState {
 			
 			// Jacina efekta
 			double vignette = 2.0;
-			// Poluprecnik kruga opisanog oko jedinicnog kvadrata
-			final double radius = Math.sqrt(2) / 2.0;
+			final double radius = Math.sqrt(2) / 2.5;
 			
 			
 			for(int y = 0; y < target.getHeight(); y++)
@@ -455,6 +541,26 @@ public class MainMenuState extends GameState {
 				start = 0;
 			}
 			g.drawImage(backgroundImage, 0, 0, null);
+
+			if(currentMenuType == MenuType.Controls || currentMenuType == MenuType.About) {
+				AffineTransform transform = new AffineTransform();
+				transform.setToIdentity();
+				transform.translate(220, 220);
+				transform.rotate(imageAngle);
+				transform.translate(-6.0, -6.0);
+	//			
+//				g.drawImage(corkImage, transform, null);
+				g.drawImage(corkImage, 40, 40, null);
+				
+				AffineTransform transform2 = new AffineTransform();
+				transform2.setToIdentity();
+				transform2.translate(host.getWidth() - 40, 40);
+				transform2.rotate(imageAngle);
+				transform2.translate(-16.0, -16.0);
+	//			
+				g.drawImage(corkImage, host.getWidth() - 240, 40, null);
+			}
+
 			
 			for(Beer beer : beers) {	
 				g.drawImage(beerImage, beer.posX, beer.posY, null);
@@ -475,6 +581,23 @@ public class MainMenuState extends GameState {
 			if(currentMenuType == MenuType.Controls)
 				renderControls(g, sw, sh);
 			
+//			if(quit == 1) {
+
+//				for(int y = 0; y < host.getHeight(); y++)
+//				{			
+//					for(int x = 0; x < host.getWidth(); x++)
+//					{
+//						int a = random.nextInt(host.getWidth());
+//						int b = random.nextInt(host.getHeight());
+//						
+//						g.drawOval(a, b, 10, 10);
+//						g.setColor(Color.RED);
+//						g.fillOval(a, b, 10, 10);
+//						
+//					}
+//				}
+
+//			}
 			
 		}
 
@@ -495,8 +618,8 @@ public class MainMenuState extends GameState {
 			for(Bubble bubble: bubbles) {
 				
 				if(bubble.life <= 0) {
-					bubble.posX = random.nextInt(host.getWidth());
-					bubble.posY = random.nextInt(100)*(-1) + host.getHeight();
+					bubble.posX = clampx(random.nextInt(host.getWidth()));
+					bubble.posY = clampy(random.nextInt(100)*(-1) + host.getHeight());
 					bubble.speed = random.nextInt(10 + 1) + 5;
 					bubble.life = random.nextInt(15) + 10;
 					bubble.height = random.nextInt(10) + 20;
@@ -509,6 +632,8 @@ public class MainMenuState extends GameState {
 				}
 				
 			}
+
+			imageAngle += imageRot;
 			
 		}
 
@@ -544,6 +669,7 @@ public class MainMenuState extends GameState {
 					}
 					offsetY += 50;
 					if(x >= offsetX - 5 && x <= offsetX - 5 + 250 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //EXIT
+//						quit = 1;
 						System.exit(0);
 					}
 				}
@@ -601,6 +727,7 @@ public class MainMenuState extends GameState {
 		@Override
 		public void handleKeyUp(int keyCode) {
 			if(keyCode == KeyEvent.VK_F4) {
+//				quit = 1;
 				System.exit(0);
 			}
 			if(keyCode == KeyEvent.VK_ESCAPE && currentMenuType != MenuType.Default) {

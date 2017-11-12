@@ -13,6 +13,7 @@ public class Model {
 	public static FilterType filterType = FilterType.NEGATIVE;
 	public static ArrayList<FilterType> selectedFilters = new ArrayList<FilterType>();
 	public static boolean isFiltered = false;
+	public static boolean isTransition = false;
 	
 	public static BufferedImage getGlobalImage() {
 		return globalImage;

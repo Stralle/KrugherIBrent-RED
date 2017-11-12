@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.Random;
 
+import main.Main;
 import main.Model;
 import rafgfxlib.GameHost;
 import rafgfxlib.GameHost.GFMouseButton;
@@ -239,7 +240,7 @@ public class MainMenuState extends GameState {
 			
 			WritableRaster raster = Util.createRaster(500, 250, false);
 
-			int rgb[] = new int[4];
+			int rgb[] = new int[3];
 			
 			int bojaGL[] = new int[3];
 			bojaGL[0] = 255;
@@ -621,8 +622,9 @@ public class MainMenuState extends GameState {
 			{
 				if(currentMenuType == MenuType.Default) {
 					if(x >= offsetX - 5 && x <= offsetX - 5 + 250 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //START
+						Main.filter.loadImage();
 						host.setState("maingamestate");
-						FilterState.setImageLeft(Model.getGlobalImage());
+						//Main.filter.setImageLeft(Model.getGlobalImage());
 					}
 					offsetY += 50;
 					if(x >= offsetX - 5 && x <= offsetX - 5 + 250 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //UPLOAD

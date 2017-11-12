@@ -34,7 +34,7 @@ public class FilterState extends GameState
 		BRIGHTNESS,
 	}
 
-	private static BufferedImage imageLeft;
+	private BufferedImage imageLeft;
 	private BufferedImage imageRight;
 	private BufferedImage imageSpiral;
 
@@ -59,29 +59,30 @@ public class FilterState extends GameState
 		imageSpiral = this.imageBlack(imageLeft);
 	}
 	
-	public FilterState(GameHost host)
+	public void loadImage()
 	{
-		super(host);
-//		setLeftImage(Util.loadImage(Model.imagePath));
 		setImageLeft(Model.getGlobalImage());
 		
-		screenWidth = this.host.getWidth();
-		screenHeight = this.host.getHeight();
-		
-		if(imageLeft.getWidth() > 5 * this.screenWidth / 12 || imageLeft.getHeight() >  5 * this.screenHeight / 12)
+		if(imageLeft.getWidth() > ((5 * this.screenWidth) / 12) || imageLeft.getHeight() > ((5 * this.screenWidth) / 12))
 		{
-			FilterState.imageLeft = imageScale(imageLeft);
-		}	
-		
+
+			this.imageLeft = imageScale(imageLeft);
+		}
+		/*
 		this.imageRight = imageLeft;
 		for(FilterType filterType: Model.selectedFilters)
-			this.imageRight = makeImage(imageRight, filterType);	
-		
-		
-	
+			this.imageRight = makeImage(imageRight, filterType);	*/
+		ColorModel cm = imageLeft.getColorModel();
+		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+		WritableRaster raster = imageLeft.copyData(null);
+		imageRight = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+		for(FilterType filterType: Model.selectedFilters)
+			this.imageRight = makeImage(imageRight, filterType);
 		
 		imageWidth = imageLeft.getWidth();
 		imageHeight = imageLeft.getHeight();
+	
+	
 		
 		xL = (screenWidth / 4) - (imageWidth / 2);
 		yL = (screenHeight / 2) - (imageHeight / 2);
@@ -94,13 +95,22 @@ public class FilterState extends GameState
 		this.imageSpiral = this.imageBlack(imageLeft);		
 	}
 	
+	public FilterState(GameHost host)
+	{
+		super(host);
+		
+		screenWidth = this.host.getWidth();
+		screenHeight = this.host.getHeight();
+		
+	}
+	
 	
 	@Override
 	public void render(Graphics2D g, int sw, int sh)
 	{	
 		
 		if(!Model.isFiltered){
-			//Sledece cetiri linije samo kopiraju sadrzaj iz right u left image
+		    //Sledece cetiri linije samo kopiraju sadrzaj iz right u left image
 			ColorModel cm = imageLeft.getColorModel();
 			boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
 			WritableRaster raster = imageLeft.copyData(null);
@@ -134,10 +144,7 @@ public class FilterState extends GameState
 			else
 			{
 			g.drawImage(imageLeft, xL, yL, null);
-			//g.drawImage(imageRight, xR, yR, null);
-			
-			g.drawImage(Model.getGlobalImage(), xR, yR, null);
-			
+			g.drawImage(imageRight, xR, yR, null);
 			
 			g.setColor(Color.red);
 			
@@ -176,7 +183,6 @@ public class FilterState extends GameState
 	
 	public BufferedImage imageScale(BufferedImage image)
 	{
-		System.out.println("bam");
 		WritableRaster source = image.getRaster() ;
 		
 		int widthNew = (5 * this.screenWidth) / 12 ;
@@ -213,20 +219,22 @@ public class FilterState extends GameState
 	{
 		WritableRaster source= imageOriginal.getRaster() ;
 		WritableRaster target = imageSpiral.getRaster();
-		for(int i = 0 ; i < 5000; i++)
+		
+		for(int i = 0 ; i < 5000 && pixel.move != Move.STOP; i++)
 		{
-		source = imageOriginal.getRaster();
-		target = imageSpiral.getRaster();
 		
-		int rgb[] = new int[3];
-		source.getPixel(this.pixel.x, this.pixel.y, rgb);
-		this.pixel.move();
-		target.setPixel(this.pixel.x, this.pixel.y, rgb);
+			int rgb[] = new int[3];
+			source.getPixel(this.pixel.x, this.pixel.y, rgb);
 		
-		
+			
+			target.setPixel(this.pixel.x, this.pixel.y, rgb);
+			this.pixel.move();
+			//System.out.println(pixel);
 		}
+		
 		return Util.rasterToImage(target);
 	}
+	
 	public class Pixel
 	{
 		public int x;
@@ -241,17 +249,20 @@ public class FilterState extends GameState
 		{
 			this.x = 0;
 			this.y = 0;
-			this.xLeft = 0;
-			this.xRight = imageWidth - 1;
-			this.yTop = 0;
+			this.xLeft = -1;
+			this.xRight = imageWidth;
+			
+			this.yTop = -1;
 			this.yBottom = imageHeight;
 			this.move = Move.DOWN;
+			//System.out.println(this);
 		}
 		
 		public void move()
 		{
 			
-			if(!(xRight - x == x - xLeft && yBottom - y ==  y - yTop ))
+			//if(!(xRight - x == x - xLeft && yBottom - y ==  y - yTop ))
+			if(!(check(x, xLeft) && check(xRight, x) && check(yBottom, y)  &&  check(y, yTop) ) && !(xRight - x == x - xLeft && yBottom - y ==  y - yTop ))
 			{
 				switch(move)
 				{
@@ -296,6 +307,12 @@ public class FilterState extends GameState
 				move = Move.STOP;
 
 			}
+		}
+		
+		public String toString()
+		{
+			return this.move + "xL: " + this.xLeft + ", xR:" + this.xRight + ", x:" + this.x + 
+					"|yT: " + this.yTop + ", yB:" + this.yBottom + ", y:" + this.y;
 		}
 		
 	}
@@ -491,7 +508,6 @@ public class FilterState extends GameState
 				{
 					for(int X = 0; X < 3; X++)
 					{
-						source.getPixel(x + X - 1, y + Y - 1, rgb);
 						
 						pixel[0] += (int) (rgb[0] * matrix[X][Y]);
 						pixel[1] += (int) (rgb[1] * matrix[X][Y]);
@@ -552,6 +568,8 @@ public class FilterState extends GameState
 		return matrix;
 	}
 
+	
+	
 	public static int clamp(int value, int min, int max)
 	{
 		if(value < min) return min;
@@ -570,6 +588,13 @@ public class FilterState extends GameState
 		return false;
 	}
 
+	private static boolean check(int a, int b)
+	{
+		if(a - b == 0 || a - b == 1)
+			return true;
+		else return false;
+	}
+	
 	@Override
 	public String getName()
 	{
@@ -631,11 +656,11 @@ public class FilterState extends GameState
 		}
 	}
 
-	public static BufferedImage getImageLeft() {
+	public BufferedImage getImageLeft() {
 		return imageLeft;
 	}
 
-	public static void setImageLeft(BufferedImage imgLeft) {
+	public void setImageLeft(BufferedImage imgLeft) {
 		imageLeft = imgLeft;
 	}
 

@@ -100,6 +100,10 @@ public class MainMenuState extends GameState {
 //			return x;
 //		}
 		
+		public void loadCork() {
+			
+		}
+		
 		public MainMenuState(GameHost host) {
 			super(host);
 			
@@ -340,7 +344,7 @@ public class MainMenuState extends GameState {
 		public void controlsBackground() {
 			WritableRaster raster = Util.createRaster(400, 300, false);
 
-			int rgb[] = new int[4];
+			int rgb[] = new int[3];
 			
 			int bojaGL[] = new int[3];
 			bojaGL[0] = 255;
@@ -416,37 +420,21 @@ public class MainMenuState extends GameState {
 			g.drawString("CONTROLS", offsetX, offsetY);
 			
 			offsetY += 50;
-			offsetX -= 85;
+			offsetX -= 105;
 			
 			g.setColor(bgColor);
-			g.drawString("LEFT ARROW == MOVE LEFT", offsetX + shadowX, offsetY - shadowY);
+			g.drawString("PLAYER MOVEMENTS: W, A, S, D", offsetX + shadowX, offsetY - shadowY);
 			
 			g.setColor(defaultColor);
-			g.drawString("LEFT ARROW == MOVE LEFT", offsetX, offsetY);
+			g.drawString("PLAYER MOVEMENTS: W, A, S, D", offsetX, offsetY);
 			
 			offsetY += 30;
 			
 			g.setColor(bgColor);
-			g.drawString("RIGHT ARROW == MOVE RIGHT", offsetX + shadowX, offsetY - shadowY);
+			g.drawString("MAP MOVEMENTS: KEYBOARD ARROWS", offsetX + shadowX, offsetY - shadowY);
 			
 			g.setColor(defaultColor);
-			g.drawString("RIGHT ARROW == MOVE RIGHT", offsetX, offsetY);
-			
-			offsetY += 30;
-			
-			g.setColor(bgColor);
-			g.drawString("UP ARROW == MOVE UP", offsetX + shadowX, offsetY - shadowY);
-			
-			g.setColor(defaultColor);
-			g.drawString("UP ARROW == MOVE UP", offsetX, offsetY);
-			
-			offsetY += 30;
-			
-			g.setColor(bgColor);
-			g.drawString("DOWN ARROW == MOVE DOWN", offsetX + shadowX, offsetY - shadowY);
-			
-			g.setColor(defaultColor);
-			g.drawString("DOWN ARROW == MOVE DOWN", offsetX, offsetY);
+			g.drawString("MAP MOVEMENTS: KEYBOARD ARROWS", offsetX, offsetY);
 			
 			offsetY += 30;
 			
@@ -468,7 +456,7 @@ public class MainMenuState extends GameState {
 		
 		public void renderBackground(Graphics2D g, int sw, int sh) {
 			BufferedImage image = Util.loadImage("/photos/beerland.jpg");
-			grafika = g;
+//			grafika = g;
 			
 			if(image == null) { System.out.println("Nema slike!"); return; }
 			
@@ -651,12 +639,6 @@ public class MainMenuState extends GameState {
 					}
 					offsetY += 50;
 					if(x >= offsetX - 5 && x <= offsetX - 5 + 250 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //EXIT
-						grafika.setBackground(Color.BLACK);
-						grafika.drawString("BYE", host.getWidth()/2, host.getHeight()/2);
-						int i = 0;
-						while(i < 100000000) {
-							i++;
-						}
 						System.exit(0);
 					}
 				}

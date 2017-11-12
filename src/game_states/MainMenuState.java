@@ -64,16 +64,16 @@ public class MainMenuState extends GameState {
 		private Beer[] beers = new Beer[BEER_MAX];
 		private Bubble[] bubbles = new Bubble[BUBBLE_MAX];
 		
+		Graphics2D grafika = null;
+		
 		private Image beerImage;
 		private Image corkImage;
 //		private Image controlsImage;
 //		private Image aboutImage;
 		private Random random = new Random();
 		
-//		private int quit = 0;
-
 		private float imageAngle = (float)(Math.random() * Math.PI * 2.0);
-		private float imageRot = (float)(Math.random() - 0.5) * 0.1f;
+//		private float imageRot = (float)(Math.random() - 0.5) * 0.1f;
 		
 		private Color stringColor = Color.CYAN;
 		private Color defaultColor = Color.CYAN;
@@ -82,23 +82,23 @@ public class MainMenuState extends GameState {
 		private MenuType currentMenuType = MenuType.Default;
 		
 		private int start = 1;
-		
-		private int clampx(int x) {
-			if(x > host.getWidth() - 200) {
-				return host.getWidth() - 200;
-			}
-			if(x < 200) {
-				return 200;
-			}
-			return x;
-		}
 
-		private int clampy(int x) {
-			if(x > host.getHeight() - 50) {
-				return host.getHeight() - 50;
-			}
-			return x;
-		}
+//		private int clampx(int x) {
+//			if(x > host.getWidth() - 200) {
+//				return host.getWidth() - 200;
+//			}
+//			if(x < 200) {
+//				return 200;
+//			}
+//			return x;
+//		}
+//
+//		private int clampy(int x) {
+//			if(x > host.getHeight() - 50) {
+//				return host.getHeight() - 50;
+//			}
+//			return x;
+//		}
 		
 		public MainMenuState(GameHost host) {
 			super(host);
@@ -110,8 +110,7 @@ public class MainMenuState extends GameState {
 				e.printStackTrace();
 			}
 			
-			for(int i = 0; i < BEER_MAX; ++i)
-			{
+			for(int i = 0; i < BEER_MAX; ++i) {
 				beers[i] = new Beer();
 				beers[i].posX = random.nextInt(host.getWidth() - 150);
 				beers[i].posY = random.nextInt(10) - 150;
@@ -120,8 +119,8 @@ public class MainMenuState extends GameState {
 			
 			for(int i = 0; i < BUBBLE_MAX; i++) {
 				bubbles[i] = new Bubble();
-				bubbles[i].posX = clampx(random.nextInt(host.getWidth()));
-				bubbles[i].posY = clampy(random.nextInt(100)*(-1) + host.getHeight());
+				bubbles[i].posX = random.nextInt(host.getWidth()) - 30;
+				bubbles[i].posY = random.nextInt(100)*(-1) + host.getHeight();
 				bubbles[i].speed = random.nextInt(10 + 1) + 5;
 				bubbles[i].life = random.nextInt(15) + 10;
 				bubbles[i].height = random.nextInt(10) + 20;
@@ -222,13 +221,11 @@ public class MainMenuState extends GameState {
 
 		}
 		
-		public static int lerp(int a, int b, double x)
-		{
+		public static int lerp(int a, int b, double x) {
 			return (int)(a + (b - a) * x);
 		}
 		
-		public static void lerpRGB(int[] output, int[] a, int[] b, double x)
-		{
+		public static void lerpRGB(int[] output, int[] a, int[] b, double x) {
 			output[0] = lerp(a[0], b[0], x);
 			output[1] = lerp(a[1], b[1], x);
 			output[2] = lerp(a[2], b[2], x);
@@ -463,7 +460,7 @@ public class MainMenuState extends GameState {
 
 			offsetX += 70;
 			g.setColor(Color.DARK_GRAY);
-			g.drawString("Press ESC to go back", offsetX+2, offsetY-2);
+			g.drawString("Press ESC to go back", offsetX + 2, offsetY - 2);
 			g.setColor(Color.RED);
 			g.drawString("Press ESC to go back", offsetX, offsetY);
 			
@@ -471,6 +468,7 @@ public class MainMenuState extends GameState {
 		
 		public void renderBackground(Graphics2D g, int sw, int sh) {
 			BufferedImage image = Util.loadImage("/photos/beerland.jpg");
+			grafika = g;
 			
 			if(image == null) { System.out.println("Nema slike!"); return; }
 			
@@ -479,15 +477,17 @@ public class MainMenuState extends GameState {
 			
 			int rgb[] = new int[3];
 			
+			// Waves efekat
 			// Snaga distorzije
-			float power = 8.0f;
+			float power = 6.0f;
 			// Velicina talasa
-			float size = 0.07f;
+			float size = 0.15f;
 			
-			// Jacina efekta
+			// Vignette efekat
+			// Jacina vignette evekta
 			double vignette = 2.0;
-			final double radius = Math.sqrt(2) / 2.5;
-			
+			// Radius efekta
+			final double radius = Math.sqrt(2) / 2.35;
 			
 			for(int y = 0; y < target.getHeight(); y++)
 			{			
@@ -518,9 +518,9 @@ public class MainMenuState extends GameState {
 					
 					// Trenutnu boju potamnjujemo zavisno od daljine i zeljene
 					// jacine vignette efekta.
-					rgb[0] = (int)(rgb[0] * (1.0 - dist * vignette));
-					rgb[1] = (int)(rgb[1] * (1.0 - dist * vignette));
-					rgb[2] = (int)(rgb[2] * (1.0 - dist * vignette));
+					rgb[0] = (int)(rgb[0] * (1.0 - dist * vignette))*2/3;
+					rgb[1] = (int)(rgb[1] * (1.0 - dist * vignette))*2/3;
+					rgb[2] = (int)(rgb[2] * (1.0 - dist * vignette))/2;
 					
 					target.setPixel(x, y, rgb);
 					
@@ -531,7 +531,7 @@ public class MainMenuState extends GameState {
 //			g.drawImage(Util.rasterToImage(target), 0, 0, null);
 			
 		}
-				
+		
 		@Override
 		public void render(Graphics2D g, int sw, int sh) {	
 			if(start == 1) {
@@ -539,6 +539,7 @@ public class MainMenuState extends GameState {
 				controlsBackground();
 				aboutBackground();
 				start = 0;
+//				g.drawImage(backgroundImage, 0, 0, null);
 			}
 			g.drawImage(backgroundImage, 0, 0, null);
 
@@ -548,8 +549,7 @@ public class MainMenuState extends GameState {
 				transform.translate(220, 220);
 				transform.rotate(imageAngle);
 				transform.translate(-6.0, -6.0);
-	//			
-//				g.drawImage(corkImage, transform, null);
+
 				g.drawImage(corkImage, 40, 40, null);
 				
 				AffineTransform transform2 = new AffineTransform();
@@ -557,7 +557,7 @@ public class MainMenuState extends GameState {
 				transform2.translate(host.getWidth() - 40, 40);
 				transform2.rotate(imageAngle);
 				transform2.translate(-16.0, -16.0);
-	//			
+
 				g.drawImage(corkImage, host.getWidth() - 240, 40, null);
 			}
 
@@ -581,24 +581,6 @@ public class MainMenuState extends GameState {
 			if(currentMenuType == MenuType.Controls)
 				renderControls(g, sw, sh);
 			
-//			if(quit == 1) {
-
-//				for(int y = 0; y < host.getHeight(); y++)
-//				{			
-//					for(int x = 0; x < host.getWidth(); x++)
-//					{
-//						int a = random.nextInt(host.getWidth());
-//						int b = random.nextInt(host.getHeight());
-//						
-//						g.drawOval(a, b, 10, 10);
-//						g.setColor(Color.RED);
-//						g.fillOval(a, b, 10, 10);
-//						
-//					}
-//				}
-
-//			}
-			
 		}
 
 		@Override
@@ -607,7 +589,7 @@ public class MainMenuState extends GameState {
 				
 				if(beer.posY >= host.getHeight()) {
 					beer.posY = -300;
-					beer.posX = random.nextInt(host.getWidth() - 100);
+					beer.posX = random.nextInt(host.getWidth() - 150);
 				}
 				else {
 					beer.posY += beer.speed;
@@ -618,8 +600,8 @@ public class MainMenuState extends GameState {
 			for(Bubble bubble: bubbles) {
 				
 				if(bubble.life <= 0) {
-					bubble.posX = clampx(random.nextInt(host.getWidth()));
-					bubble.posY = clampy(random.nextInt(100)*(-1) + host.getHeight());
+					bubble.posX = random.nextInt(host.getWidth()) - 30;
+					bubble.posY = random.nextInt(100)*(-1) + host.getHeight();
 					bubble.speed = random.nextInt(10 + 1) + 5;
 					bubble.life = random.nextInt(15) + 10;
 					bubble.height = random.nextInt(10) + 20;
@@ -633,7 +615,7 @@ public class MainMenuState extends GameState {
 				
 			}
 
-			imageAngle += imageRot;
+//			imageAngle += imageRot;
 			
 		}
 
@@ -669,7 +651,12 @@ public class MainMenuState extends GameState {
 					}
 					offsetY += 50;
 					if(x >= offsetX - 5 && x <= offsetX - 5 + 250 && y >= offsetY - 24 && y <= offsetY - 24 + 40) { //EXIT
-//						quit = 1;
+						grafika.setBackground(Color.BLACK);
+						grafika.drawString("BYE", host.getWidth()/2, host.getHeight()/2);
+						int i = 0;
+						while(i < 100000000) {
+							i++;
+						}
 						System.exit(0);
 					}
 				}
@@ -727,7 +714,6 @@ public class MainMenuState extends GameState {
 		@Override
 		public void handleKeyUp(int keyCode) {
 			if(keyCode == KeyEvent.VK_F4) {
-//				quit = 1;
 				System.exit(0);
 			}
 			if(keyCode == KeyEvent.VK_ESCAPE && currentMenuType != MenuType.Default) {

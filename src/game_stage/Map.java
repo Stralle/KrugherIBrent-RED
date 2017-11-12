@@ -122,7 +122,7 @@ public class Map extends GameState {
 
 	public void initSpecialFields() {
 		try {
-			specialField = Util.loadImage("/photos/redb.png");
+			specialField = Util.loadImage("/photos/redb64.png");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -147,7 +147,7 @@ public class Map extends GameState {
 
 		int octaveSize = 2;
 
-		float persistence = 0.65f;
+		float persistence = 0.75f;
 
 		int width = (int) Math.pow(octaveSize, octaves);
 		int height = width;
@@ -177,7 +177,7 @@ public class Map extends GameState {
 			multiplier *= persistence;
 		}
 
-		BufferedImage imgGradient = Util.loadImage("/photos/gradient3.jpg");
+		BufferedImage imgGradient = Util.loadImage("/photos/grad.jpg");
 
 		if (imgGradient == null) {
 			System.out.println("Nema gradijenta!");
@@ -185,7 +185,16 @@ public class Map extends GameState {
 		}
 
 		Util.mapFloatMapViaGradient(finalMap, -1.0f, 1.0f, Util.imageToGradient(imgGradient), target);
-
+		
+		int rgb[] = new int[3];
+		rgb[0] = 0;
+		rgb[1] = 0;
+		rgb[2] = 0;
+		for(int y = 0; y<30;y++){
+			for(int x = 0; x<target.getWidth();x++){
+				target.setPixel(x, y, rgb);
+			}
+		}
 		// ImageViewer.showImageWindow(Util.rasterToImage(target), "RAF
 		// Racunarska Grafika");
 		mapImage = Util.rasterToImage(target);
@@ -226,7 +235,7 @@ public class Map extends GameState {
 						g.setColor(Color.RED);
 						g.drawRect(x * IMG_WIDTH - shiftX, y * IMG_HEIGHT - shiftY, IMG_WIDTH, IMG_HEIGHT);
 					}
-					g.drawImage(specialField, x * IMG_WIDTH - shiftX, y * IMG_HEIGHT - 30 - shiftY, null);
+					g.drawImage(specialField, x * IMG_WIDTH - shiftX, y * IMG_HEIGHT - shiftY, null);
 				}
 			}
 		}
@@ -258,11 +267,11 @@ public class Map extends GameState {
 					for (int i = 0; i < img.getHeight(); i++) {
 						for (int j = 0; j < img.getWidth(); j++) {
 							if (x * IMG_WIDTH - shiftX + j >= 0 && x * IMG_WIDTH - shiftX + j < host.getWidth()
-									&& y * IMG_HEIGHT - shiftY - 30 + i >= 0
-									&& y * IMG_HEIGHT - 30 - shiftY + i < host.getHeight()) {
+									&& y * IMG_HEIGHT - shiftY + i >= 0
+									&& y * IMG_HEIGHT - shiftY + i < host.getHeight()) {
 								img.getPixel(j, i, rgb);
 								if (rgb[3] != 0)
-									target.setPixel(x * IMG_WIDTH - shiftX + j, y * IMG_HEIGHT - shiftY - 30 + i, rgb);
+									target.setPixel(x * IMG_WIDTH - shiftX + j, y * IMG_HEIGHT - shiftY + i, rgb);
 							}
 						}
 					}
@@ -430,6 +439,9 @@ public class Map extends GameState {
 		if (keyCode == KeyEvent.VK_A) {
 			moveCnt = (moveCnt + 1) % 3;
 			plyrShiftX -= 6;
+			if(plyrShiftX<-20){
+				plyrShiftX = -20;
+			}
 			if (moveCnt == 0) {
 				player.setImage(playerLeft[pos++]);
 			}
@@ -438,6 +450,9 @@ public class Map extends GameState {
 		if (keyCode == KeyEvent.VK_D) {
 			moveCnt = (moveCnt + 1) % 3;
 			plyrShiftX += 6;
+			if(plyrShiftX>mapImage.getWidth()-PLYR_WIDTH+20){
+				plyrShiftX = mapImage.getWidth()-PLYR_WIDTH+20;
+			}
 			if (moveCnt == 0) {
 				player.setImage(playerRight[pos++]);
 			}
@@ -446,6 +461,9 @@ public class Map extends GameState {
 		if (keyCode == KeyEvent.VK_W) {
 			moveCnt = (moveCnt + 1) % 3;
 			plyrShiftY -= 6;
+			if(plyrShiftY<-10){
+				plyrShiftY = -10;
+			}
 			if (moveCnt == 0) {
 				player.setImage(playerUp[pos++]);
 			}
@@ -454,6 +472,9 @@ public class Map extends GameState {
 		if (keyCode == KeyEvent.VK_S) {
 			moveCnt = (moveCnt + 1) % 3;
 			plyrShiftY += 6;
+			if(plyrShiftY>mapImage.getHeight()-PLYR_HEIGHT){
+				plyrShiftY = mapImage.getHeight()-PLYR_HEIGHT;
+			}
 			if (moveCnt == 0) {
 				player.setImage(playerDown[pos++]);
 			}
